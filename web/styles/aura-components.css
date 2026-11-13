@@ -1,0 +1,66 @@
+.aura-icon { flex: none; }
+
+/* ---- Button ---- */
+.aura-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); font: inherit; font-weight: 600; border: 1px solid transparent; border-radius: var(--radius-md); cursor: pointer; white-space: nowrap; transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease; }
+.aura-btn--sm { height: 32px; padding: 0 var(--space-3); font-size: 13px; }
+.aura-btn--md { height: 40px; padding: 0 var(--space-4); font-size: 15px; }
+.aura-btn--lg { height: 48px; padding: 0 var(--space-5); font-size: 17px; }
+.aura-btn--primary { background: var(--aura); color: var(--on-aura); }
+.aura-btn--primary:hover:not(:disabled) { background: var(--aura-strong); }
+.aura-btn--secondary { background: var(--surface-raised); color: var(--ink); border-color: var(--line-strong); }
+.aura-btn--secondary:hover:not(:disabled) { background: var(--surface-sunken); }
+.aura-btn--ghost { background: transparent; color: var(--aura-text); }
+.aura-btn--ghost:hover:not(:disabled) { background: var(--aura-soft); }
+.aura-btn--danger { background: var(--danger-soft); color: var(--danger); border-color: var(--danger); }
+.aura-btn--danger:hover:not(:disabled) { background: var(--surface-raised); }
+.aura-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.aura-btn:disabled { cursor: not-allowed; opacity: .5; }
+.aura-btn.is-loading { opacity: .85; cursor: progress; }
+.aura-spinner { width: 14px; height: 14px; border-radius: var(--radius-full); border: 2px solid currentColor; border-right-color: transparent; animation: aura-spin .7s linear infinite; }
+@keyframes aura-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .aura-spinner { animation-duration: 2s; } .aura-btn { transition: none; } }
+
+/* ---- Badge ---- */
+.aura-badge { display: inline-flex; align-items: center; gap: var(--space-1); height: 22px; padding: 0 var(--space-2); border-radius: var(--radius-sm); font-size: 12px; line-height: 16px; font-weight: 600; }
+.aura-badge__dot { width: 6px; height: 6px; border-radius: var(--radius-full); background: currentColor; }
+.aura-badge--neutral { background: var(--surface-sunken); color: var(--ink-muted); }
+.aura-badge--aura { background: var(--aura-soft); color: var(--aura-text); }
+.aura-badge--success { background: var(--success-soft); color: var(--success); }
+.aura-badge--warning { background: var(--warning-soft); color: var(--warning); }
+.aura-badge--info { background: var(--info-soft); color: var(--info); }
+
+/* ---- TextField ---- */
+.aura-field { display: flex; flex-direction: column; gap: var(--space-2); min-width: 260px; }
+.aura-field__label { font-size: 13px; line-height: 18px; font-weight: 500; color: var(--ink); }
+.aura-field__input { height: 40px; padding: 0 var(--space-3); font: inherit; color: var(--ink); background: var(--surface-raised); border: 1px solid var(--line-strong); border-radius: var(--radius-md); transition: border-color .15s ease; }
+.aura-field__input.is-mono { font-family: var(--font-mono); font-size: 13px; }
+.aura-field__input::placeholder { color: var(--ink-muted); }
+.aura-field__input:hover { border-color: var(--ink-muted); }
+.aura-field__input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-color: var(--aura); }
+.aura-field__hint { display: flex; align-items: center; gap: var(--space-1); margin: 0; font-size: 12px; line-height: 16px; color: var(--ink-muted); }
+.aura-field__hint .aura-icon { width: 14px; height: 14px; }
+.aura-field.is-invalid .aura-field__input { border-color: var(--danger); }
+.aura-field.is-invalid .aura-field__hint { color: var(--danger); }
+
+/* ---- Card ---- */
+.aura-card { background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: var(--space-2); }
+.aura-card--elevated { box-shadow: var(--shadow-md); }
+.aura-card--glow { box-shadow: var(--shadow-glow); border-color: var(--aura); }
+.aura-card__eyebrow { margin: 0; font-size: 11px; line-height: 16px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--aura-text); }
+.aura-card__title { margin: 0; font-size: 20px; line-height: 28px; font-weight: 600; color: var(--ink); }
+.aura-card__body { color: var(--ink-muted); }
+.aura-card__footer { display: flex; gap: var(--space-3); margin-top: var(--space-3); }
+
+/* ---- Alert ---- */
+.aura-alert { display: flex; gap: var(--space-3); padding: var(--space-4); border-radius: var(--radius-md); border: 1px solid; color: var(--ink); }
+.aura-alert__content { display: flex; flex-direction: column; gap: var(--space-1); }
+.aura-alert__title { margin: 0; font-weight: 600; }
+.aura-alert__body { font-size: 15px; line-height: 22px; }
+.aura-alert--info { background: var(--info-soft); border-color: var(--info); }
+.aura-alert--info .aura-icon { color: var(--info); }
+.aura-alert--success { background: var(--success-soft); border-color: var(--success); }
+.aura-alert--success .aura-icon { color: var(--success); }
+.aura-alert--warning { background: var(--warning-soft); border-color: var(--warning); }
+.aura-alert--warning .aura-icon { color: var(--warning); }
+.aura-alert--danger { background: var(--danger-soft); border-color: var(--danger); }
+.aura-alert--danger .aura-icon { color: var(--danger); }

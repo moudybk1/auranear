@@ -1,0 +1,121 @@
+/* Aura — design tokens (warna, spasi, radius, bayangan)
+   Tema terang = default. Tema gelap: <html data-theme="dark">.
+   Tanpa atribut data-theme, tema mengikuti setelan perangkat (prefers-color-scheme). */
+
+:root, [data-theme="light"] {
+  color-scheme: light;
+  --surface: #F3EBD9;
+  --surface-raised: #FBF6EA;
+  --surface-sunken: #EFE7D5;
+  --ink: #1F1214;
+  --ink-muted: #6E5759;
+  --line: #E0D5BF;
+  --line-strong: #8F846E;
+  --aura: #D61F2C;
+  --aura-strong: #AE1520;
+  --aura-soft: #FDE8E9;
+  --on-aura: #FFFFFF;
+  --aura-text: #B8141F;
+  --garnet: #5A0E17;
+  --on-garnet: #FFFFFF;
+  --blush: #FFC9CE;
+  --focus: #D61F2C;
+  --success: #0B7285;
+  --success-soft: #E2F3F6;
+  --warning: #9A4A00;
+  --warning-soft: #FDF0E0;
+  --danger: var(--aura-text);
+  --danger-soft: var(--aura-soft);
+  --info: #1D5FD1;
+  --info-soft: #E6EEFC;
+  --shadow-sm: 0 1px 2px rgba(31,18,20,0.06);
+  --shadow-md: 0 4px 12px rgba(31,18,20,0.08), 0 1px 2px rgba(31,18,20,0.06);
+  --shadow-lg: 0 16px 40px rgba(31,18,20,0.14);
+  --shadow-glow: 0 8px 28px rgba(214,31,44,0.28);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --surface: #000000;
+  --surface-raised: #0E0E0E;
+  --surface-sunken: #000000;
+  --ink: #F7EDEE;
+  --ink-muted: #B9A4A6;
+  --line: #242424;
+  --line-strong: #707070;
+  --aura: #FF4D58;
+  --aura-strong: #FF7A82;
+  --aura-soft: #3D1318;
+  --on-aura: #1A0507;
+  --aura-text: #FF7A82;
+  --garnet: #7A1522;
+  --on-garnet: #F7EDEE;
+  --blush: #FFB3BA;
+  --focus: #FF7A82;
+  --success: #5ED3E0;
+  --success-soft: #0D2A2F;
+  --warning: #F5B54A;
+  --warning-soft: #33230C;
+  --danger: var(--aura-text);
+  --danger-soft: var(--aura-soft);
+  --info: #7EAAFF;
+  --info-soft: #142240;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.5);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-lg: 0 16px 40px rgba(0,0,0,0.6);
+  --shadow-glow: 0 8px 28px rgba(255,77,88,0.30);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --surface: #000000;
+    --surface-raised: #0E0E0E;
+    --surface-sunken: #000000;
+    --ink: #F7EDEE;
+    --ink-muted: #B9A4A6;
+    --line: #242424;
+    --line-strong: #707070;
+    --aura: #FF4D58;
+    --aura-strong: #FF7A82;
+    --aura-soft: #3D1318;
+    --on-aura: #1A0507;
+    --aura-text: #FF7A82;
+    --garnet: #7A1522;
+    --on-garnet: #F7EDEE;
+    --blush: #FFB3BA;
+    --focus: #FF7A82;
+    --success: #5ED3E0;
+    --success-soft: #0D2A2F;
+    --warning: #F5B54A;
+    --warning-soft: #33230C;
+    --danger: var(--aura-text);
+    --danger-soft: var(--aura-soft);
+    --info: #7EAAFF;
+    --info-soft: #142240;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.5);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.4);
+    --shadow-lg: 0 16px 40px rgba(0,0,0,0.6);
+    --shadow-glow: 0 8px 28px rgba(255,77,88,0.30);
+  }
+}
+
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
+}
+
+/* Ring fokus standar */
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+body { background: var(--surface); color: var(--ink); }

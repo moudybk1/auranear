@@ -1,0 +1,25 @@
+[package]
+name = "aura-perps"
+version = "0.1.0"
+edition = "2021"
+description = "Aura: pool-based perpetual futures on NEAR (BTC, ETH, NEAR; GPU compute index next)"
+license = "MIT"
+repository = "https://github.com/moudybk1/auranear"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+near-sdk = "5.30"
+near-contract-standards = "5.30"
+
+[dev-dependencies]
+near-sdk = { version = "5.30", features = ["unit-testing"] }
+
+[profile.release]
+codegen-units = 1
+opt-level = "z"
+lto = true
+debug = false
+panic = "abort"
+overflow-checks = true
