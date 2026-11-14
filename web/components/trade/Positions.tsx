@@ -16,18 +16,14 @@ const fundingText = (owed: string, locale: 'en' | 'id') => {
   return signedUsd(v, locale, v > -10_000n && v < 10_000n ? 4 : 2);
 };
 
-export function Positions({ onSelectMarket }: { onSelectMarket: (id: string) => void }) {
+export function Positions({ onSelectMarket, hidden }: { onSelectMarket: (id: string) => void; hidden?: boolean }) {
   const { t, locale } = useI18n();
   const { accountId, positions, markets } = useAura();
   const [closing, setClosing] = useState<string | null>(null);
   const target = positions.find((p) => p.id === closing);
 
   return (
-    <section className="panel positions">
-      <div className="panel__head">
-        <h2 className="panel__title">{t('positions.title')}</h2>
-        {positions.length > 0 && <Badge>{positions.length}</Badge>}
-      </div>
+    <div className="positions" role="tabpanel" aria-label={t('positions.title')} hidden={hidden}>
       {positions.length === 0 ? (
         <p className="panel__empty">{t(accountId ? 'positions.empty' : 'positions.connect')}</p>
       ) : (
@@ -92,7 +88,7 @@ export function Positions({ onSelectMarket }: { onSelectMarket: (id: string) => 
       <Dialog open={!!target} onClose={() => setClosing(null)} title={t('positions.close')} closeLabel={t('dialog.close')}>
         {target && <CloseForm position={target} onClose={() => setClosing(null)} />}
       </Dialog>
-    </section>
+    </div>
   );
 }
 

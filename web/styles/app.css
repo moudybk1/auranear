@@ -7,7 +7,7 @@
   --font-mono: var(--font-fragment-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
   /* Dialog overlay from docs/FRONTEND_SPEC.md §6: ink at 50%. */
   --scrim: rgb(31 18 20 / 0.5);
-  --hdr-h: 52px;
+  --hdr-h: 48px;
 }
 [data-theme='dark'] { --scrim: rgb(0 0 0 / 0.62); }
 @media (prefers-color-scheme: dark) {
@@ -45,6 +45,8 @@ body {
 .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
 .muted { color: var(--ink-muted); }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* A class that sets `display` would otherwise bring a hidden tab panel back. */
+[hidden] { display: none !important; }
 
 /* Direction is never colour alone: every use pairs these with a sign, an arrow or the word. */
 .up { color: var(--success); }
@@ -174,12 +176,13 @@ body {
   display: flex;
   align-items: flex-start;
   gap: var(--space-2);
-  padding: 7px var(--space-4);
+  padding: 4px var(--space-4);
   background: var(--warning-soft);
   border-bottom: 1px solid var(--line);
-  font-size: 12.5px;
+  font-size: 12px;
+  line-height: 16px;
 }
-.notice svg { flex: none; margin-top: 1px; color: var(--warning); }
+.notice svg { flex: none; color: var(--warning); }
 .notice b { font-weight: 600; }
 .notice--info { background: var(--info-soft); }
 .notice--info svg { color: var(--info); }
@@ -262,22 +265,25 @@ body {
 .seg--sm .seg__item { height: 26px; padding: 0 10px; font-size: 12px; }
 
 /* ---------- Trade terminal ---------- */
+/* Panels sit flush and are split by hairlines: the grid's 1px gap shows the line colour underneath. */
 .terminal {
   display: grid;
   flex: 1;
-  gap: var(--space-2);
-  padding: var(--space-2);
+  gap: 1px;
+  background: var(--line);
   grid-template-columns: minmax(0, 1fr);
-  grid-template-areas: 'mbar' 'chart' 'order' 'positions' 'info';
+  grid-template-areas: 'mbar' 'chart' 'order' 'dock';
 }
+.terminal .panel { border: 0; border-radius: 0; }
 
-.mbar { grid-area: mbar; flex-direction: row; align-items: center; flex-wrap: wrap; gap: var(--space-2) var(--space-4); padding: var(--space-2); }
-.mtabs { display: flex; gap: var(--space-1); }
+.mbar { grid-area: mbar; flex-direction: row; align-items: stretch; min-height: 52px; overflow-x: auto; scrollbar-width: none; }
+.mtabs { display: flex; flex: none; gap: 2px; padding: 6px; border-right: 1px solid var(--line); }
 .mtab {
   display: grid;
-  gap: 2px;
-  min-width: 108px;
-  padding: 6px var(--space-3);
+  align-content: center;
+  gap: 1px;
+  min-width: 104px;
+  padding: 3px var(--space-3);
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -292,7 +298,7 @@ body {
 .mtab__px { color: var(--ink-muted); font-size: 12px; line-height: 16px; }
 .mtab[aria-selected='true'] .mtab__px { color: var(--ink); }
 
-.stats { display: flex; align-items: center; flex-wrap: wrap; flex: 1; gap: var(--space-2) var(--space-5); min-width: 0; padding: 0 var(--space-2); }
+.stats { display: flex; align-items: center; flex: 1; gap: var(--space-5); padding: 0 var(--space-4); }
 .stat { display: grid; gap: 2px; }
 .stat dt { color: var(--ink-muted); font-size: 11.5px; line-height: 14px; white-space: nowrap; }
 .stat dd { display: flex; align-items: center; gap: 6px; min-height: 18px; white-space: nowrap; }
@@ -305,12 +311,49 @@ body {
 /* Inside the chart, Vela's own focus styles apply instead of the kit's global ring. */
 [data-vela-theme] :focus-visible { outline: revert-layer; outline-offset: revert-layer; }
 
-.info { grid-area: info; container-type: inline-size; overflow: hidden; }
-.info__groups { display: grid; gap: 1px; background: var(--line); overflow: auto; border-radius: 0 0 var(--radius-md) var(--radius-md); }
+/* Bottom dock: positions and market details share one panel, picked by tab. */
+.dock { grid-area: dock; min-height: 220px; }
+.dock__tabs { display: flex; flex: none; gap: var(--space-2); padding: 0 var(--space-2); border-bottom: 1px solid var(--line); }
+.dock__tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 var(--space-2);
+  border: 0;
+  background: transparent;
+  color: var(--ink-muted);
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.dock__tab:hover, .dock__tab[aria-selected='true'] { color: var(--ink); }
+.dock__tab[aria-selected='true']::after {
+  content: '';
+  position: absolute;
+  inset: auto var(--space-2) -1px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--aura);
+}
+.dock__tab .muted { font-weight: 400; }
+
+.info { flex: 1; min-height: 0; overflow: auto; container-type: inline-size; }
+.info__groups { display: grid; gap: 1px; min-height: 100%; background: var(--line); }
 .info__group { display: grid; align-content: start; gap: var(--space-2); padding: var(--space-3); background: var(--surface-raised); }
 .info__group h3 { font-size: 12px; line-height: 16px; font-weight: 600; }
 .info__note { color: var(--ink-muted); font-size: 12px; line-height: 16px; }
 @container (min-width: 520px) { .info__groups { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* A wide dock: the rules run in two columns so they fit without scrolling. */
+@container (min-width: 680px) {
+  .info__groups { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
+  .info__group .kv { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-5); }
+}
+@container (min-width: 960px) {
+  .info__group .kv { column-gap: var(--space-7); }
+}
 
 .cap { display: grid; gap: 5px; }
 .cap__row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
@@ -320,8 +363,8 @@ body {
 .cap--long .cap__bar i { background: var(--success); }
 .cap--long .cap__side { color: var(--success); }
 
-.order { grid-area: order; display: flex; flex-direction: column; gap: var(--space-2); min-height: 0; }
-.order__form { gap: var(--space-4); padding: var(--space-3); }
+.order { grid-area: order; display: flex; flex-direction: column; min-height: 0; background: var(--surface-raised); }
+.order__form { gap: 10px; padding: var(--space-3); }
 .field__top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); margin-bottom: 6px; }
 .field__label { font-weight: 500; }
 .field__aside { color: var(--ink-muted); font-size: 12px; }
@@ -331,7 +374,7 @@ body {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  height: 44px;
+  height: 40px;
   padding: 0 var(--space-3);
   background: var(--surface-raised);
   border: 1px solid var(--line-strong);
@@ -424,10 +467,11 @@ body {
 .order__reason.is-blocking svg { color: var(--warning); }
 
 .acct { gap: var(--space-3); padding: var(--space-3); }
+.terminal .acct { border-top: 1px solid var(--line); }
 .acct__actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
 .acct h3 { font-size: 13px; line-height: 18px; font-weight: 600; }
 
-.positions { grid-area: positions; container-type: inline-size; min-height: 220px; }
+.positions { display: flex; flex-direction: column; flex: 1; min-height: 0; container-type: inline-size; }
 .positions__scroll { flex: 1; min-height: 0; overflow: auto; }
 .ptable { width: 100%; border-collapse: collapse; }
 .ptable th {
@@ -453,7 +497,12 @@ body {
 .ptable__market button { padding: 0; border: 0; background: none; font-weight: 600; cursor: pointer; }
 .ptable__market button:hover { text-decoration: underline; text-underline-offset: 3px; }
 .ptable__sub { display: block; color: var(--ink-muted); font-size: 12px; line-height: 16px; }
-@container (max-width: 780px) {
+/* A mid-width dock keeps the table: tighter cells, and no collateral column (the leverage badge implies it). */
+@container (min-width: 601px) and (max-width: 860px) {
+  .ptable th, .ptable td { padding: 0 var(--space-2); }
+  .ptable th:nth-child(3), .ptable td:nth-child(3) { display: none; }
+}
+@container (max-width: 600px) {
   .ptable thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   .ptable, .ptable tbody { display: block; }
   .ptable tr { display: grid; grid-template-columns: 1fr 1fr; gap: 6px var(--space-5); padding: var(--space-3); border-bottom: 1px solid var(--line); }
@@ -466,36 +515,28 @@ body {
   .ptable td.is-wide .aura-btn { width: 100%; height: 40px; }
 }
 
+/* Two columns: chart over the dock, with the order rail down the right side. */
 @media (min-width: 768px) {
   .terminal {
     grid-template-columns: minmax(0, 1fr) 320px;
-    grid-template-rows: auto 460px auto auto;
-    grid-template-areas: 'mbar mbar' 'chart order' 'positions order' 'info info';
-    align-items: start;
+    grid-template-rows: auto 460px minmax(220px, 1fr);
+    grid-template-areas: 'mbar mbar' 'chart order' 'dock order';
   }
-  .chart { align-self: stretch; }
 }
 /* Below wide desktop the bar drops the two reference-only stats to stay compact. */
 @media (max-width: 1279px) {
   .stat--minor { display: none; }
-}
-@media (min-width: 768px) and (max-width: 1279px) {
-  .mtab { min-width: 100px; }
+  .stats { gap: var(--space-4); }
 }
 /* Wide and tall enough: the terminal fills the viewport and panels scroll on their own. */
-@media (min-width: 1280px) and (min-height: 700px) {
+@media (min-width: 1024px) and (min-height: 640px) {
   .app:has(.terminal) { height: 100dvh; }
-  .terminal {
-    min-height: 0;
-    grid-template-columns: minmax(0, 1fr) 280px 328px;
-    grid-template-rows: auto minmax(0, 1fr) minmax(200px, 28%);
-    grid-template-areas: 'mbar mbar mbar' 'chart info order' 'positions positions order';
-    align-items: stretch;
-  }
-  .chart { min-height: 0; }
+  .terminal { min-height: 0; grid-template-rows: auto minmax(0, 1fr) minmax(190px, 30%); }
+  .chart, .dock { min-height: 0; }
   .order { overflow-y: auto; }
-  .positions { min-height: 0; }
-  .info__groups { flex: 1; }
+}
+@media (min-width: 1440px) {
+  .terminal { grid-template-columns: minmax(0, 1fr) 352px; }
 }
 
 /* ---------- Dialog ---------- */
@@ -585,11 +626,11 @@ body {
   .tabbar a { display: grid; place-content: center; justify-items: center; gap: 2px; color: var(--ink-muted); font-size: 12px; font-weight: 500; text-decoration: none; }
   .tabbar a[aria-current='page'] { color: var(--aura-text); }
   .toasts { bottom: calc(56px + env(safe-area-inset-bottom) + var(--space-3)); }
-  .mbar { padding: var(--space-2); }
-  .mtabs { width: 100%; }
+  .mbar { flex-wrap: wrap; overflow: visible; }
+  .mtabs { width: 100%; border-right: 0; border-bottom: 1px solid var(--line); }
   .mtab { flex: 1; min-width: 0; padding: 6px var(--space-2); }
   .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3) var(--space-4); padding: var(--space-2); }
-  .stat--price { grid-column: 1 / -1; }
+  .stat--price { display: none; } /* the selected market tab already shows it */
   .chart { min-height: 420px; }
   .order__cta { height: 48px; font-size: 17px; }
   .acct__actions .aura-btn { height: 40px; }

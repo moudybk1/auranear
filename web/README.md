@@ -74,9 +74,11 @@ Demo state lives in `localStorage`; "Reset demo data" in the wallet menu clears 
 
 ## Where it differs from `docs/FRONTEND_SPEC.md`
 
-- Layout is a full-width trading terminal (chart, market details, order form, positions) instead of the 1200 px
-  8/4 grid, at the owner's request. The market details panel takes the slot an order book would have, since a
-  pool model has none.
+- Layout is a full-width trading terminal instead of the 1200 px 8/4 grid, at the owner's request: a one-row
+  market bar, the chart over a tabbed dock (open positions, market details), and the order form and account in a
+  rail on the right. Panels sit flush, split by hairlines. From 1024 px wide and 640 px tall it fills the viewport
+  and panels scroll on their own; below that the page scrolls. A pool model has no order book, so the chart takes
+  that width. Checked 14 Nov at 1440, 1280, 1024, 900 and 375 px, in both themes, in demo mode and against testnet.
 - NEAR Connect instead of `@near-wallet-selector/*`, whose last release was December 2025.
 - The chart is the Vela chart app with candles, at the owner's request, instead of a line from `/prices/:market`.
 - One polling provider instead of SWR. Fonts are self-hosted from the brand kit, not loaded from Google Fonts.

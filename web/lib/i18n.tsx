@@ -46,6 +46,7 @@ const en = {
   'chart.entry': 'Entry',
   'chart.liq': 'Liq.',
 
+  'dock.label': 'Positions and market details',
   'info.title': 'Market details',
   'info.liquidity': 'Liquidity',
   'info.liquidity.note': 'The vault takes the other side. Each side can hold up to {pct}% of vault value.',
@@ -257,6 +258,7 @@ const id: Record<Key, string> = {
   'chart.entry': 'Masuk',
   'chart.liq': 'Likuidasi',
 
+  'dock.label': 'Posisi dan rincian market',
   'info.title': 'Rincian market',
   'info.liquidity': 'Likuiditas',
   'info.liquidity.note': 'Vault menjadi lawan posisi. Tiap sisi bisa menampung sampai {pct}% nilai vault.',

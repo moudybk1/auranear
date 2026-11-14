@@ -31,19 +31,18 @@ export function Capacity({ side, used, cap }: { side: 'long' | 'short'; used: bi
   );
 }
 
-export function MarketInfo({ market }: { market?: MarketView }) {
+export function MarketInfo({ market, hidden }: { market?: MarketView; hidden?: boolean }) {
   const { t, locale } = useI18n();
   const { vault, config } = useAura();
   const pct = (bps: number, dp = 1) => `${num(bps / 100, locale, dp)}%`;
 
   if (!market || !vault) {
     return (
-      <section className="panel info" aria-label={t('info.title')}>
-        <div className="panel__head"><h2 className="panel__title">{t('info.title')}</h2></div>
+      <div className="info" role="tabpanel" aria-label={t('info.title')} hidden={hidden}>
         <div className="info__groups">
           <div className="info__group"><Skeleton width={120} /><Skeleton width={200} /><Skeleton width={160} /></div>
         </div>
-      </section>
+      </div>
     );
   }
 
@@ -54,11 +53,7 @@ export function MarketInfo({ market }: { market?: MarketView }) {
     : t('unit.minutes', { n: Math.round(cfg.stale_after_sec / 60) });
 
   return (
-    <section className="panel info" aria-label={t('info.title')}>
-      <div className="panel__head">
-        <h2 className="panel__title">{t('info.title')}</h2>
-        <span className="muted">{market.id}</span>
-      </div>
+    <div className="info" role="tabpanel" aria-label={t('info.title')} hidden={hidden}>
       <div className="info__groups">
         <div className="info__group">
           <h3>{t('info.liquidity')}</h3>
@@ -89,6 +84,6 @@ export function MarketInfo({ market }: { market?: MarketView }) {
           </dl>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
