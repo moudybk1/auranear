@@ -7,7 +7,7 @@
   --font-mono: var(--font-fragment-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
   /* Dialog overlay from docs/FRONTEND_SPEC.md §6: ink at 50%. */
   --scrim: rgb(31 18 20 / 0.5);
-  --hdr-h: 48px;
+  --hdr-h: 52px;
 }
 [data-theme='dark'] { --scrim: rgb(0 0 0 / 0.62); }
 @media (prefers-color-scheme: dark) {
@@ -93,8 +93,8 @@ body {
   background: var(--surface-raised);
   border-bottom: 1px solid var(--line);
 }
-.hdr__logo { display: flex; align-items: center; border-radius: var(--radius-sm); }
-.hdr__logo svg { display: block; height: 24px; width: auto; }
+.hdr__logo { display: flex; align-items: center; margin-right: var(--space-2); border-radius: var(--radius-sm); }
+.hdr__logo svg { display: block; height: 26px; width: auto; }
 .hdr__logo .logo-mark { display: none; }
 .hdr__nav { display: flex; align-self: stretch; }
 .hdr__nav a {
