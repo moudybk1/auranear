@@ -36,7 +36,7 @@ Aura adalah perps exchange model pool di NEAR. Hanya lapisan on-chain yang memeg
 | Layanan | Agent hedging | Hedge biaya compute di GPU-H100 | Fase berikutnya |
 | Klien | Web app Next.js (`web/`) | Trade, Vault (lalu Agent) | Belum dibangun |
 | Operasi | `scripts/01..05` | Akun, deploy, market, seed vault, dana agent | Ditulis, belum dijalankan |
-| Desain | `design-system/` | Token, komponen, logo Aura | Lengkap |
+| Desain | `web/styles/`, `web/app/fonts/` | Token, gaya komponen, font Aura | Disalin ke web app; folder kit `design-system/` tidak ikut di repo |
 
 ## 3. Prinsip desain
 
@@ -97,7 +97,7 @@ Aura adalah perps exchange model pool di NEAR. Hanya lapisan on-chain yang memeg
 | Kontrak | Rust, near-sdk 5.30, near-contract-standards, cargo-near | SDK resmi; unit test tanpa jaringan |
 | CLI | near-cli-rs + bash | Bisa diulang; langkah mainnet minta konfirmasi |
 | Layanan | Node.js 20+, TypeScript, near-api-js, better-sqlite3, satu proses | Satu deploy untuk semua layanan |
-| Frontend | Next.js (App Router), TypeScript, `@near-wallet-selector`, CSS variable dari `design-system/tokens.css`, Lucide | Sesuai design system |
+| Frontend | Next.js (App Router), TypeScript, `@near-wallet-selector`, CSS variable dari `web/styles/aura-tokens.css`, Lucide | Sesuai design system |
 | Hosting | Vercel (web), Railway/VPS kecil (layanan) | Hidup sampai 25 Nov |
 | RPC | RPC publik NEAR + satu cadangan | Gratis |
 
@@ -111,7 +111,7 @@ aura/
   contracts/perps/      kontrak (ada)
   contracts/mock-ft/    token tes (ada)
   scripts/              deploy (ada)
-  design-system/        token, komponen, logo (ada)
+  design-system/        token, komponen, logo (tidak ikut di repo; salinannya di web/styles/)
   docs/                 dokumen ini
   services/             oracle, keeper, api, db (dibangun)
   web/                  Next.js (dibangun)

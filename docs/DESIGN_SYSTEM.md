@@ -2,6 +2,17 @@
 
 Sumber kebenaran ada di `design-system/` (salinan identik dari design system Aura milik pemilik project). File ini menjelaskan cara memakainya untuk layar perps. Bila ada pertentangan, `design-system/README.md` yang menang.
 
+**Status 14 Nov 2026:** folder `design-system/` tidak ikut di repo ini, jadi §1 dan §2 menjelaskan kit aslinya, bukan file yang bisa dibuka di sini. Yang ada di repo:
+
+| Di kit | Di repo ini |
+|---|---|
+| `tokens.css` | `web/styles/aura-tokens.css` |
+| `components/bundle.css` | `web/styles/aura-components.css` |
+| `components/bundle.js` (port ke TSX) | `web/components/ui.tsx` |
+| `assets/logos/*.svg` | `web/components/Logo.tsx`, `web/app/icon.svg` |
+| Font lewat `next/font/google` | Self-hosted di `web/app/fonts/`, dimuat dengan `next/font/local` di `web/app/layout.tsx` |
+| Impor `../../design-system/...` di `globals.css` | `web/app/globals.css` mengimpor dari `../styles/` |
+
 ## 1. Isi `design-system/`
 
 | File | Isi | Cara pakai |

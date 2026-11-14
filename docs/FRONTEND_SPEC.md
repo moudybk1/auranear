@@ -1,6 +1,8 @@
 # Spesifikasi frontend — Aura web app
 
-Belum dibangun. Dokumen ini adalah kontrak untuk membangun `web/`. Baca bersama `docs/DESIGN_SYSTEM.md`, `docs/USERFLOW.md`, `docs/API.md`.
+Dokumen ini adalah kontrak untuk membangun `web/`. Baca bersama `docs/DESIGN_SYSTEM.md`, `docs/USERFLOW.md`, `docs/API.md`.
+
+**Status 14 Nov 2026:** Trade dan Vault sudah dibangun di `web/`. Yang berbeda dari dokumen ini (layout, wallet, chart, struktur file, letak token) dan apa yang sudah serta belum dijalankan: `web/README.md`.
 
 ## 1. Stack
 
@@ -8,7 +10,7 @@ Belum dibangun. Dokumen ini adalah kontrak untuk membangun `web/`. Baca bersama 
 - `@near-wallet-selector/core` + modal UI + minimal dua modul wallet (mis. MyNearWallet dan Meteor). Verifikasi nama paket dan API versi terbaru saat implementasi.
 - `near-api-js` (atau `fetch` JSON-RPC langsung) untuk view call.
 - Data fetching: SWR atau TanStack Query, `refetchInterval` 5000 ms.
-- Gaya: CSS variable dari `design-system/tokens.css` + `bundle.css`. Ikon `lucide-react`.
+- Gaya: CSS variable dari `design-system/tokens.css` + `bundle.css` (di repo ini: `web/styles/aura-tokens.css` + `aura-components.css`). Ikon `lucide-react`.
 - Tanpa backend sendiri. HTTP API layanan (`NEXT_PUBLIC_SERVICES_URL`) opsional; aplikasi harus tetap berfungsi bila API itu mati.
 
 ## 2. Struktur

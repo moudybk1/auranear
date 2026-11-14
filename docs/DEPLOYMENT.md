@@ -68,7 +68,7 @@ Setelah ini kode tidak bisa diganti. Jangan lakukan sebelum yakin. Sintaks `dele
 
 | Bagian | Tempat | Catatan |
 |---|---|---|
-| Web | Vercel | Root `web/`; env `NEXT_PUBLIC_*`; pastikan impor `../design-system` ikut ter-build (monorepo root = repo) |
+| Web | Vercel | Root `web/`; env `NEXT_PUBLIC_*`. Tidak ada impor ke luar `web/` (token ada di `web/styles/`), jadi root directory `web/` saja cukup |
 | Layanan | Railway / VPS kecil | Root `services/`; volume persisten untuk `DB_PATH`; restart otomatis; env rahasia |
 | Pemantauan | Cek `/health` tiap 5 menit (uptime monitor gratis) | Hidup minimal sampai 18 Nov, idealnya 25 Nov |
 

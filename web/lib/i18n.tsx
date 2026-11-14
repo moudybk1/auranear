@@ -209,6 +209,7 @@ const en = {
   'status.oracle.stale': 'Oracle stale',
   'status.oracle.wait': 'Waiting for oracle',
   'status.contract': 'Contract',
+  'status.source': 'Source code',
   'status.simulated': 'Simulated contract, nothing on-chain',
 };
 
@@ -419,6 +420,7 @@ const id: Record<Key, string> = {
   'status.oracle.stale': 'Oracle basi',
   'status.oracle.wait': 'Menunggu oracle',
   'status.contract': 'Kontrak',
+  'status.source': 'Kode sumber',
   'status.simulated': 'Kontrak simulasi, tidak ada di jaringan',
 };
 

@@ -6,3 +6,4 @@ node_modules/
 !.env.example
 *.wasm
 .DS_Store
+*.tsbuildinfo

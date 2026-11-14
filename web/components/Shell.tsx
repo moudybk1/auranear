@@ -4,7 +4,7 @@ import { ChartCandlestick, ChevronDown, Copy, ExternalLink, Languages, LogOut, M
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { CONTRACT_ID, DEMO, EXPLORER, NETWORK } from '../lib/config';
+import { CONTRACT_ID, DEMO, EXPLORER, NETWORK, REPO_URL } from '../lib/config';
 import { shortAccount } from '../lib/format';
 import { useI18n } from '../lib/i18n';
 import { useAura, type Toast } from '../lib/store';
@@ -196,6 +196,10 @@ function StatusBar() {
         {t(`status.oracle.${state}`)}
       </span>
       <span>{t(DEMO ? 'net.demo' : `net.${NETWORK}`)}</span>
+      <a href={REPO_URL} target="_blank" rel="noreferrer">
+        {t('status.source')}
+        <ExternalLink size={12} strokeWidth={1.75} aria-hidden />
+      </a>
       {DEMO ? (
         <span className="sbar__end">{t('status.simulated')}</span>
       ) : (

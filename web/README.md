@@ -10,6 +10,10 @@ npm run typecheck
 npm run build
 ```
 
+`npm test` runs the TypeScript directly, so it needs an official Node.js 22.22+ build. A Node compiled without
+TypeScript support (Ubuntu's `nodejs` 22.22.1, for one) fails with `ERR_NO_TYPESCRIPT`; `dev`, `typecheck` and
+`build` still work there.
+
 ## Two modes
 
 | | Demo (default) | Live |
@@ -27,7 +31,8 @@ Demo state lives in `localStorage`; "Reset demo data" in the wallet menu clears 
 ## What has been run, and what has not
 
 - Run in the browser (demo): connect, activate + deposit, open long, close dialog, both themes, English and
-  Indonesian, 1440 / 1024 / 375 px.
+  Indonesian, 1440 / 1024 / 375 px. On 14 Nov the whole cycle ran in demo mode in one session: activate + deposit,
+  open long, open short, close, withdraw, vault deposit, vault withdraw, each ending in its success toast.
 - Run in the browser (chart): market switching from the page and from the chart, live theme switch, Indonesian,
   saved state restored under the other theme, the mobile layout, and the oracle and entry lines.
 - Run against testnet (12 Nov 2026, contract `perps.aura-perps.testnet`, `.env.local` as in `.env.example`): the
@@ -40,8 +45,9 @@ Demo state lives in `localStorage`; "Reset demo data" in the wallet menu clears 
   signing step as a normal element in `body`, which a modal dialog covers and makes inert. So `Dialog` steps aside
   while a live transaction waits for the wallet and comes back, with the typed amount, if it fails. Checked on
   testnet with the NEAR CLI wallet in Deposit, Withdraw and Close position, including a cancelled request.
-- **Not run:** a browser-extension or popup wallet (Meteor, Intear, ...), activation of a new account
-  (`storage_deposit` from the UI), vault deposit and withdraw from the UI, the liquidation toast, the paused banner.
+- **Not run on testnet:** a browser-extension or popup wallet (Meteor, Intear, ...), activation of a new account
+  (`storage_deposit` from the UI), open short, vault deposit and withdraw from the UI, the liquidation toast, the
+  paused banner.
 - Test tokens: on testnet the Deposit and vault deposit dialogs have a "Get 1,000 test USDC" button that calls the
   public `faucet` of the test token (`tusd.aura-perps.testnet`). Run once from the UI with the owner account on
   13 Nov: the wallet balance went up and the dialog came back with it. It is shown on any live testnet build, so it
@@ -74,5 +80,9 @@ Demo state lives in `localStorage`; "Reset demo data" in the wallet menu clears 
 - NEAR Connect instead of `@near-wallet-selector/*`, whose last release was December 2025.
 - The chart is the Vela chart app with candles, at the owner's request, instead of a line from `/prices/:market`.
 - One polling provider instead of SWR. Fonts are self-hosted from the brand kit, not loaded from Google Fonts.
-- Skipped until needed: `/prices/:market` and `/health` from the services API (not built), redirect-wallet URL
-  handling, two-step (GPU-H100) orders, ESLint (`next lint` no longer exists in Next 16).
+- The brand kit's `design-system/` folder is not in this repo. Its tokens and component styles are copied to
+  `styles/aura-tokens.css` and `styles/aura-components.css`; nothing is imported from outside `web/`.
+- The footer is a status bar: oracle state (from the contract's own freshness flag), network, a source link and the
+  contract on the explorer. It does not read the services' `/health`.
+- Skipped until needed: `/prices/:market` (not built), the `/health` status, redirect-wallet URL handling, two-step
+  (GPU-H100) orders, ESLint (`next lint` no longer exists in Next 16).

@@ -11,6 +11,8 @@ export const CONTRACT_ID = DEMO ? SIM_CONTRACT : contract;
 export const USDC_ID = DEMO ? SIM_TOKEN : (process.env.NEXT_PUBLIC_USDC_ID ?? '');
 /** Show the test-token faucet. ponytail: assumes the testnet token is contracts/mock-ft; add an env flag if a testnet deploy ever uses a token without `faucet`. */
 export const FAUCET = !DEMO && NETWORK === 'testnet';
+/** Source link in the status bar (docs/FRONTEND_SPEC.md §3.3). */
+export const REPO_URL = 'https://github.com/moudybk1/auranear';
 export const EXPLORER = NETWORK === 'mainnet' ? 'https://nearblocks.io' : 'https://testnet.nearblocks.io';
 export const RPC_URLS = (
   process.env.NEXT_PUBLIC_RPC_URL ??
