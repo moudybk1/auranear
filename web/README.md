@@ -42,8 +42,10 @@ Demo state lives in `localStorage`; "Reset demo data" in the wallet menu clears 
   testnet with the NEAR CLI wallet in Deposit, Withdraw and Close position, including a cancelled request.
 - **Not run:** a browser-extension or popup wallet (Meteor, Intear, ...), activation of a new account
   (`storage_deposit` from the UI), vault deposit and withdraw from the UI, the liquidation toast, the paused banner.
-  There is no test-token faucet in live mode: a new testnet account gets tUSD from the `faucet` method of
-  `tusd.aura-perps.testnet` by CLI.
+- Test tokens: on testnet the Deposit and vault deposit dialogs have a "Get 1,000 test USDC" button that calls the
+  public `faucet` of the test token (`tusd.aura-perps.testnet`). Run once from the UI with the owner account on
+  13 Nov: the wallet balance went up and the dialog came back with it. It is shown on any live testnet build, so it
+  assumes the token is `contracts/mock-ft`. Not shown on mainnet or in demo mode.
 
 ## Notes
 

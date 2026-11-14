@@ -36,8 +36,8 @@ Invarian `assert_solvent` (saldo pengguna + vault + insurance = token yang dipeg
 - [ ] Deposit lewat `ft_transfer_call` menambah `free`; deposit di atas batas direfund
 - [ ] `withdraw` mengirim tUSD kembali; saldo konsisten
 - [ ] Buka dan tutup posisi di tiap market; angka cocok dengan rumus
-- [ ] Oracle menjaga 3 market segar 30 menit
-- [ ] Keeper melikuidasi posisi 10x setelah harga digeser
+- [x] Oracle menjaga 3 market segar 30 menit (13 Nov, dari laptop)
+- [x] Keeper melikuidasi posisi 10x setelah harga digeser (13 Nov, sekitar 20 detik)
 - [ ] Setor LP, tarik LP; harga share berubah sesuai PnL trader
 - [ ] `set_paused(true)`: buka ditolak, tutup dan tarik jalan
 - [ ] Catat gas tiap method (target < 100 Tgas) dan pemakaian storage per akun (≤ 0,02 NEAR)

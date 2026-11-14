@@ -9,6 +9,8 @@ export const DEMO = !contract || contract.includes('yourname');
 export const NETWORK: 'mainnet' | 'testnet' = process.env.NEXT_PUBLIC_NETWORK === 'mainnet' ? 'mainnet' : 'testnet';
 export const CONTRACT_ID = DEMO ? SIM_CONTRACT : contract;
 export const USDC_ID = DEMO ? SIM_TOKEN : (process.env.NEXT_PUBLIC_USDC_ID ?? '');
+/** Show the test-token faucet. ponytail: assumes the testnet token is contracts/mock-ft; add an env flag if a testnet deploy ever uses a token without `faucet`. */
+export const FAUCET = !DEMO && NETWORK === 'testnet';
 export const EXPLORER = NETWORK === 'mainnet' ? 'https://nearblocks.io' : 'https://testnet.nearblocks.io';
 export const RPC_URLS = (
   process.env.NEXT_PUBLIC_RPC_URL ??

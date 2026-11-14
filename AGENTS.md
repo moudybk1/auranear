@@ -16,10 +16,10 @@ Aura adalah perps exchange model pool di NEAR. Trader menyetor USDC, membuka lon
 |---|---|---|
 | Kontrak perps | `contracts/perps` | `cargo test` = 40 lulus. Wasm ter-build tanpa perubahan kode (281 KB) dan **ter-deploy di testnet** (`perps.aura-perps.testnet`): 3 market, vault berisi setoran LP. Satu siklus deposit, buka, tutup, tarik, tarik LP sudah berjalan di sana dan invarian cocok. Belum di mainnet. |
 | Token tes tUSD | `contracts/mock-ft` | Ter-deploy di testnet (`tusd.aura-perps.testnet`). Hanya untuk testnet. |
-| Script deploy | `scripts/01..06` | `01`–`04` sudah dijalankan di testnet (near-cli-rs 0.30.1, cargo-near 0.23.0, bash 3.2 macOS). `05` **belum pernah dijalankan**. `06-push-prices.sh` mendorong satu harga manual per market (testnet saja) selama oracle belum ada. |
+| Script deploy | `scripts/01..06` | `01`–`04` sudah dijalankan di testnet (near-cli-rs 0.30.1, cargo-near 0.23.0, bash 3.2 macOS). `05` **belum pernah dijalankan**. `06-push-prices.sh` mendorong satu harga manual per market (testnet saja); cadangan saat layanan oracle tidak berjalan. |
 | Design system | `design-system/` | Lengkap (token, CSS, komponen, logo). Font tidak ikut, lihat `design-system/fonts/README.md`. |
-| Layanan (oracle, keeper, API) | `services/` | **Belum ada. Kamu yang membangun.** Spesifikasi: `docs/SERVICES_SPEC.md`. |
-| Web app | `web/` | Trade dan Vault sudah dibangun. Dengan `web/.env.local` membaca kontrak testnet; tanpa itu berjalan dalam mode demo. Deposit, buka, tutup, tarik sudah ditandatangani dari UI di testnet lewat wallet NEAR CLI. Dialog app dulu menutupi wallet yang tampil di dalam halaman; sudah diperbaiki di `Dialog` (`web/components/ui.tsx`) dan diuji di ketiga dialog. Setor/tarik LP dan aktivasi akun dari UI belum dicoba. Lihat `web/README.md`. |
+| Layanan (oracle, keeper, `/health`) | `services/` | Dibangun 13 Nov: `npm test` = 4 lulus, `npm run typecheck` bersih. Sudah dijalankan ke testnet dari laptop pemilik: oracle mendorong median Binance, Gate, HTX dan ketiga market segar lagi setelah basi 19 jam; keeper melikuidasi posisi uji 10x sekitar 20 detik setelah `set_price_force` −6% di NEAR-USD; oracle lalu mengembalikan harga dalam dua dorongan (dorong bertahap). **Belum di-hosting.** Belum ada SQLite, `/prices`, `/keeper/log`, `/stats`, batas laju: lihat catatan di awal `docs/SERVICES_SPEC.md`. |
+| Web app | `web/` | Trade dan Vault sudah dibangun. Dengan `web/.env.local` membaca kontrak testnet; tanpa itu berjalan dalam mode demo. Deposit, buka, tutup, tarik sudah ditandatangani dari UI di testnet lewat wallet NEAR CLI. Dialog app dulu menutupi wallet yang tampil di dalam halaman; sudah diperbaiki di `Dialog` (`web/components/ui.tsx`) dan diuji di ketiga dialog. Setor/tarik LP dan aktivasi akun dari UI belum dicoba. 13 Nov: dialog deposit dan setor vault punya tombol faucet tUSD di testnet (1.000 per klik, diuji dari UI dengan akun owner), dan chip `No registered provider serves ""` di chart sudah hilang (state chart tersimpan dulu dipulihkan tanpa simbol). Lihat `web/README.md`. |
 | Agent hedging + market GPU | - | Fase berikutnya. Jangan dikerjakan sebelum butir 1–6 di bawah selesai. |
 
 ### Deploy testnet saat ini
@@ -35,10 +35,9 @@ Kunci semua akun ada di `~/.near-credentials/testnet/` pada laptop pemilik, tida
 
 Temuan gladi yang masih terbuka:
 
-- **Harga basi setelah 10 menit.** Sampai butir 3 selesai, jalankan `./scripts/06-push-prices.sh` sebelum mencoba buka/tutup posisi. Satu `set_price` menghabiskan sekitar 0,00026 NEAR dari akun oracle (saldo 0,5 NEAR).
-- **Tidak ada faucet tUSD di mode live.** Akun wallet baru harus diberi tUSD lewat CLI (`faucet` di kontrak token) sebelum bisa deposit dari UI.
-- **Debu pembulatan funding.** Setelah semua posisi ditutup `get_vault.pending_funding` tersisa −1 micro-USD per posisi yang pernah ditutup (−3 setelah tiga posisi), sehingga NAV berada sejumlah itu di bawah aset. Invarian token tetap cocok. Logika akuntansi tidak diubah; putuskan apakah ini diterima.
-- **Chart**: chip `No registered provider serves ""` sempat muncul di atas chart Vela pada beberapa pemuatan halaman (tidak pada pemuatan terakhir); peringatan konsol yang sama (`[vela] symbol "" not yet resolvable`) sudah tercatat di log dev saat mode demo.
+- **Harga basi bila layanan mati.** Oracle baru berjalan di laptop (`cd services && npm start`). Selama belum di-hosting, harga basi 10 menit setelah proses itu berhenti; `./scripts/06-push-prices.sh` tetap bisa dipakai sebagai cadangan manual. Satu `set_price` menghabiskan sekitar 0,00026 NEAR: heartbeat saja ≈ 0,225 NEAR/hari untuk 3 market, sedangkan saldo akun oracle 0,49 NEAR.
+- **Sumber harga oracle.** Dari jaringan laptop pemilik hanya Binance (mirror data publik), Gate, dan HTX yang terjangkau; Coinbase, Kraken, dan OKX diblokir ISP sehingga respons mereka belum bisa diverifikasi dan tidak dipakai. Ketiga sumber memakai pasangan USDT. Tambahkan venue USD di `services/src/oracle.ts` setelah dicek dari host.
+- **Debu pembulatan funding.** Setelah semua posisi ditutup `get_vault.pending_funding` tersisa −1 sampai −2 micro-USD per posisi yang pernah ditutup atau dilikuidasi (−5 setelah empat posisi), sehingga NAV berada sejumlah itu di bawah aset. Invarian token tetap cocok. Logika akuntansi tidak diubah; putuskan apakah ini diterima.
 
 ## 3. Peta dokumen
 
@@ -62,10 +61,10 @@ Temuan gladi yang masih terbuka:
 
 1. **Build kontrak ke wasm.** (Selesai 12 Nov.) `cd contracts/perps && cargo near build non-reproducible-wasm`. Perbaiki error build bila ada tanpa mengubah perilaku; `cargo test` harus tetap 40 lulus.
 2. **Gladi testnet.** (Selesai 12 Nov, lihat §2.) Jalankan `scripts/01..04` dengan `NETWORK=testnet`. Perbaiki script bila ada flag yang salah. Selesai jika `get_markets` menampilkan 3 market dan `get_vault` menampilkan setoran LP.
-3. **Layanan: oracle pusher.** Sesuai `docs/SERVICES_SPEC.md`. Selesai jika ketiga market `is_fresh: true` terus-menerus selama 30 menit di testnet.
-4. **Layanan: keeper.** Selesai jika posisi leverage tinggi yang sengaja dibuat dilikuidasi otomatis setelah harga digeser.
+3. **Layanan: oracle pusher.** (Selesai 13 Nov: dipantau 30 menit dari laptop, 60 sampel, tidak ada harga basi, umur harga tertua 303 detik, tanpa error di log layanan.) Sesuai `docs/SERVICES_SPEC.md`. Selesai jika ketiga market `is_fresh: true` terus-menerus selama 30 menit di testnet.
+4. **Layanan: keeper.** (Selesai 13 Nov, lihat §2.) Selesai jika posisi leverage tinggi yang sengaja dibuat dilikuidasi otomatis setelah harga digeser.
 5. **Web app: Trade dan Vault.** Sesuai `docs/FRONTEND_SPEC.md` dan `docs/DESIGN_SYSTEM.md`. Selesai jika satu siklus penuh (aktivasi akun, deposit, buka, tutup, tarik, setor LP, tarik LP) berjalan lewat UI di testnet.
-6. **HTTP API + SQLite** untuk riwayat harga dan `/health`.
+6. **HTTP API + SQLite** untuk riwayat harga dan `/health`. (`/health` sudah ada; SQLite dan riwayat belum.) Sebelum itu: hosting layanan, lihat `docs/DEPLOYMENT.md` §6.
 7. **Mainnet** (hanya oleh pemilik project, lihat aturan di bawah), lalu README final, video, submission.
 8. Fase berikutnya: market GPU-H100, agent hedging, halaman Agent.
 
@@ -101,7 +100,7 @@ export NETWORK=testnet OWNER=<akun>.testnet
 AMOUNT=500000000 ./scripts/04-seed-vault.sh
 ./scripts/06-push-prices.sh                            # testnet saja: satu harga per market, basi setelah 10 menit
 
-# Layanan dan web (setelah kamu membuatnya)
-cd services && npm i && npm run dev
+# Layanan (butuh services/.env) dan web
+cd services && npm i && npm test && npm start         # /health di http://localhost:8787/health
 cd web && npm i && npm run dev
 ```

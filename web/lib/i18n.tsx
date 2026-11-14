@@ -105,6 +105,7 @@ const en = {
   'account.activate.cta': 'Activate account',
   'account.activate.and': 'Activate and deposit',
   'account.activate.optional': 'Optional. Leave empty to activate only.',
+  'faucet.cta': 'Get 1,000 test USDC',
 
   'dialog.amount': 'Amount',
   'dialog.cancel': 'Cancel',
@@ -178,6 +179,7 @@ const en = {
   'tx.ok.close': 'Position closed',
   'tx.ok.lpDeposit': 'Vault deposit received',
   'tx.ok.lpWithdraw': 'Vault withdrawal sent',
+  'tx.ok.faucet': 'Test USDC received',
   'toast.dismiss': 'Dismiss',
   'liquidated.title': 'Position liquidated',
   'liquidated.body': 'It fell below maintenance margin. Remaining collateral went to the vault.',
@@ -313,6 +315,7 @@ const id: Record<Key, string> = {
   'account.activate.cta': 'Aktifkan akun',
   'account.activate.and': 'Aktifkan dan deposit',
   'account.activate.optional': 'Opsional. Kosongkan untuk aktivasi saja.',
+  'faucet.cta': 'Ambil 1.000 USDC tes',
 
   'dialog.amount': 'Jumlah',
   'dialog.cancel': 'Batal',
@@ -386,6 +389,7 @@ const id: Record<Key, string> = {
   'tx.ok.close': 'Posisi ditutup',
   'tx.ok.lpDeposit': 'Setoran vault diterima',
   'tx.ok.lpWithdraw': 'Penarikan vault terkirim',
+  'tx.ok.faucet': 'USDC tes diterima',
   'toast.dismiss': 'Tutup',
   'liquidated.title': 'Posisi dilikuidasi',
   'liquidated.body': 'Posisi turun di bawah maintenance margin. Sisa collateral masuk ke vault.',

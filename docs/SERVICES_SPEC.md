@@ -1,6 +1,17 @@
 # Spesifikasi layanan — oracle, keeper, HTTP API
 
-Belum dibangun. Satu proses Node.js 20+ (TypeScript) menjalankan tiga loop dan satu server HTTP. Baca bersama `docs/API.md` dan `docs/DATABASE.md`.
+Satu proses Node.js (TypeScript) menjalankan loop oracle, loop keeper, dan satu server HTTP. Baca bersama `docs/API.md` dan `docs/DATABASE.md`.
+
+**Status 13 Nov 2026:** oracle, keeper, dan `GET /health` sudah dibangun di `services/` dan dijalankan ke testnet (hasil: `AGENTS.md` §2). Yang berbeda dari dokumen ini:
+
+| Di spec | Yang dibangun |
+|---|---|
+| Struktur §1 (10 file), `tsx`, `npm run build` | Lima file: `src/index.ts` (start, `/health`), `near.ts` (env, RPC, log), `price.ts` (matematika murni), `oracle.ts`, `keeper.ts`. Node ≥ 22.22 menjalankan TypeScript langsung, tanpa build |
+| SQLite, `/prices`, `/keeper/log`, `/stats`, batas laju | Belum ada. `/health` membaca state di memori, jadi `liquidations_24h` kembali 0 saat proses restart |
+| Sumber harga: ≥ 3, dipilih saat implementasi | Binance (mirror data publik), Gate, HTX: yang terjangkau dan terverifikasi dari jaringan pemilik pada 13 Nov. Semuanya pasangan USDT |
+| Ambang dorong 30 bps (dibulatkan ke bawah) | Gerak dibulatkan ke atas seperti `move_bps` di kontrak, supaya keputusan dorong bertahap selalu cocok dengan kontrak |
+| Keeper mencatat reward dari nilai kembali | Log hanya memuat `position_id` dan `tx_hash`; reward ada di event `liquidate` |
+| Unit test §7 | `npm test`: 4 test untuk parse desimal, median dan pencilan, keputusan dorong, dorong bertahap. Uji "matikan 2 sumber" belum dijalankan |
 
 ## 1. Struktur
 

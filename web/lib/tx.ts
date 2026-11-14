@@ -18,6 +18,11 @@ export const deposit = (amount: bigint, msg: 'deposit' | 'lp'): Tx => ({
   deposit: ONE_YOCTO,
 });
 
+/** Testnet only: 1,000 test tokens, the most contracts/mock-ft mints per call. */
+export const faucet = (accountId: string): Tx => ({
+  receiverId: USDC_ID, method: 'faucet', args: { account_id: accountId, amount: '1000000000' }, gas: tgas(30), deposit: '0',
+});
+
 export const openPosition = (marketId: string, isLong: boolean, collateral: bigint, leverageBps: number): Tx => ({
   receiverId: CONTRACT_ID,
   method: 'open_position',

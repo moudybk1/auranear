@@ -1,11 +1,12 @@
 'use client';
 
 import { useId, useState } from 'react';
+import { FAUCET } from '../lib/config';
 import { num, usd } from '../lib/format';
 import { useI18n } from '../lib/i18n';
 import { fromBase, toBase } from '../lib/math';
 import { useAura } from '../lib/store';
-import { activate, deposit, lpWithdraw, withdraw } from '../lib/tx';
+import { activate, deposit, faucet, lpWithdraw, withdraw } from '../lib/tx';
 import { Button, Dialog, StatusIcon, cx } from './ui';
 import { nearAmount } from './trade/OrderForm';
 
@@ -17,7 +18,7 @@ const floor0 = (v: bigint) => (v > 0n ? v : 0n);
 /** Moves USDC between the wallet, the trading balance and the vault. One dialog, four directions. */
 export function FundsDialog({ kind, onClose }: { kind: FundsKind | null; onClose: () => void }) {
   const { t, locale } = useI18n();
-  const { account, config, vault, walletUsdc, send } = useAura();
+  const { accountId, account, config, vault, walletUsdc, send } = useAura();
   if (!kind || !config || !vault) return <Dialog open={false} onClose={onClose} title="" closeLabel="">{null}</Dialog>;
 
   const wallet = BigInt(walletUsdc ?? 0);
@@ -68,16 +69,20 @@ export function FundsDialog({ kind, onClose }: { kind: FundsKind | null; onClose
 
   return (
     <Dialog open onClose={onClose} title={view.title} closeLabel={t('dialog.close')}>
-      <AmountForm {...view} allowEmpty={kind === 'deposit' && newAccount} onClose={onClose} />
+      <AmountForm
+        {...view} allowEmpty={kind === 'deposit' && newAccount} onClose={onClose}
+        // The dialog stays open: it steps aside for the wallet and comes back with the new wallet balance.
+        onFaucet={FAUCET && accountId && kind !== 'withdraw' && kind !== 'lpWithdraw' ? () => void send([faucet(accountId)], t('tx.ok.faucet')) : undefined}
+      />
     </Dialog>
   );
 }
 
 function AmountForm({
-  body, maxLabel, max, cta, run, allowEmpty, onClose,
+  body, maxLabel, max, cta, run, allowEmpty, onClose, onFaucet,
 }: {
   body: string; maxLabel: string; max: bigint; cta: (amount: bigint) => string;
-  run: (amount: bigint) => Promise<boolean>; allowEmpty: boolean; onClose: () => void;
+  run: (amount: bigint) => Promise<boolean>; allowEmpty: boolean; onClose: () => void; onFaucet?: () => void;
 }) {
   const { t, locale } = useI18n();
   const { pending } = useAura();
@@ -121,6 +126,11 @@ function AmountForm({
             <p className="dlg__hint">{t('account.activate.optional')}</p>
           ) : null}
         </div>
+        {onFaucet && (
+          <div className="dlg__hint">
+            <Button variant="ghost" size="sm" disabled={pending} onClick={onFaucet}>{t('faucet.cta')}</Button>
+          </div>
+        )}
       </div>
       <div className="dlg__foot">
         <Button variant="ghost" onClick={onClose}>{t('dialog.cancel')}</Button>

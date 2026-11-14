@@ -12,16 +12,16 @@ Built at NEAR HACKATHON (1–14 Nov 2026).
 | Demo video / X post | _coming soon_ |
 | Contract | Testnet: [`perps.aura-perps.testnet`](https://testnet.nearblocks.io/address/perps.aura-perps.testnet). Mainnet: _coming soon_ |
 
-## Status (12 Nov 2026)
+## Status (13 Nov 2026)
 
 | Part | Where | Status |
 |---|---|---|
 | Perps contract | `contracts/perps` | 40 unit tests pass. Built to wasm (281 KB) and deployed on **testnet** at `perps.aura-perps.testnet` with 3 markets and a 500 tUSD seeded vault. One deposit, open, close, withdraw and LP withdraw cycle ran there and the token balance matched the accounting. Not on mainnet |
 | Test token | `contracts/mock-ft` | Deployed on testnet at `tusd.aura-perps.testnet` (testnet only, no value) |
-| Deploy scripts | `scripts/` | `01`–`04` run on testnet (near-cli-rs 0.30.1, cargo-near 0.23.0). `05` not run yet. `06-push-prices.sh` pushes one manual testnet price per market until the oracle exists |
+| Deploy scripts | `scripts/` | `01`–`04` run on testnet (near-cli-rs 0.30.1, cargo-near 0.23.0). `05` not run yet. `06-push-prices.sh` pushes one manual testnet price per market, a fallback for when the oracle service is not running |
 | Design system | `design-system/` | Complete |
 | Specs | `docs/`, `AGENTS.md` | Complete |
-| Oracle, keeper, HTTP API | `services/` | Not built yet (spec: `docs/SERVICES_SPEC.md`). Until then testnet prices are pushed by hand and go stale after 10 minutes, which disables opening and closing |
+| Oracle, keeper, `/health` | `services/` | Built 13 Nov: one Node.js process. The oracle pushes the median of three public spot tickers (Binance, Gate, HTX) when a price moves 30 bps or every 300 s, the keeper liquidates, and `GET /health` reports both. Run against testnet from a laptop: the three markets went from 19 hours stale to fresh and stayed fresh through a 30-minute check (60 samples, oldest price 303 s); a 10x test position was liquidated by the keeper about 20 s after the owner forced NEAR-USD down 6%; the oracle then walked the price back in two pushes, inside the contract's 5% jump limit. **Not hosted yet**, so prices go stale 10 minutes after that process stops. No price-history API yet (see the note at the top of `docs/SERVICES_SPEC.md`) |
 | Web app | `web/` | Trade and Vault built. With `web/.env.local` it reads the testnet contract; without it, it runs in demo mode (in-browser simulator). Deposit, open, close and withdraw were signed from the UI on testnet through the NEAR CLI wallet. See `web/README.md` |
 
 Building this? Start with [`AGENTS.md`](AGENTS.md).
@@ -61,6 +61,18 @@ cd contracts/perps
 cargo test        # test result: ok. 40 passed
 ```
 
+### Oracle and keeper
+
+Needs Node.js 22.22 or newer (it runs the TypeScript directly, there is no build step).
+
+```bash
+cd services
+cp .env.example .env     # contract id, plus the oracle and keeper keys from ~/.near-credentials/<network>/
+npm install
+npm test                 # 4 passed
+npm start                # logs one JSON line per push and liquidation; http://localhost:8787/health
+```
+
 ### Deploy to testnet
 
 Requirements and details: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
@@ -93,7 +105,7 @@ The docs are written in Indonesian. Code is in English; the UI is specified in E
 ## Trust assumptions and known limitations
 
 - Not audited. Caps are deliberately tiny.
-- The oracle is a single account run by the team.
+- The oracle is a single account run by the team. It pushes the median of three exchange tickers (Binance, Gate, HTX), all quoted in USDT and treated as USD.
 - The owner can pause, change parameters and force a price. There is no code-upgrade function; the contract account's keys are deleted after the final deploy.
 - On instant-execution markets a trader who sees an exchange price move before the oracle pushes it can profit at the vault's expense; the 0.1% fee per side only partly covers this.
 - Full list: [`docs/SECURITY.md`](docs/SECURITY.md).
@@ -101,7 +113,7 @@ The docs are written in Indonesian. Code is in English; the UI is specified in E
 ## Disclosure
 
 - All code was written during the hackathon (from 12 Nov 2026), with AI coding assistance (Claude).
-- Libraries: [near-sdk-rs](https://github.com/near/near-sdk-rs), near-contract-standards.
+- Libraries: [near-sdk-rs](https://github.com/near/near-sdk-rs), near-contract-standards, [near-api-js](https://github.com/near/near-api-js) (services).
 - Web app: Next.js, React, [Vela](https://github.com/LuxAlgo/Vela) by LuxAlgo (the chart), lucide-react, [NEAR Connect](https://github.com/hot-dao/near-selector). Chart candles and 24h stats are reference data from Binance's public market-data API.
 - Fonts in the design system: Funnel Display, Funnel Sans, Fragment Mono (SIL OFL).
 

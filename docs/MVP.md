@@ -29,8 +29,8 @@ MVP adalah semua kebutuhan P0 di `docs/PRD.md` berjalan di mainnet untuk tiga ma
 
 - [ ] `cargo test` di `contracts/perps`: 40 lulus
 - [ ] Wasm ter-build dan ter-deploy di testnet; 3 market terdaftar
-- [ ] Oracle menjaga 3 market tetap segar 30 menit tanpa error
-- [ ] Keeper melikuidasi posisi uji di testnet
+- [x] Oracle menjaga 3 market tetap segar 30 menit tanpa error (13 Nov, dari laptop)
+- [x] Keeper melikuidasi posisi uji di testnet (13 Nov)
 - [ ] Lewat web di testnet: aktivasi, deposit, buka long, buka short, tutup, tarik, setor LP, tarik LP
 - [ ] UI memakai token design system, tema terang dan gelap, satu tombol primary per tampilan
 - [ ] Harga basi, pause, dan batas guarded launch tampil jelas di UI

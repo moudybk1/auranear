@@ -77,16 +77,18 @@ const levelsLayer: RendererLayerDefinition = {
 
 // Saved chart state keeps the user's timeframe, chart style, indicators and drawings. Colours are dropped on
 // the way back in: they always come from the Aura theme, so a chart saved in one theme never returns wearing
-// the other. The market is dropped too, because the page's market tabs decide it.
+// the other. The market is replaced with the page's, because the page's market tabs decide it. It must be
+// replaced, not removed: Vela 0.10.6 looks up a restored chart without a symbol as "" and shows
+// `No registered provider serves ""`.
 // ponytail: this also forgets cosmetic tweaks made in Vela's settings dialog; keep `rendererConfig` minus its colours if users miss them.
-const chartStorage = {
+const chartStorage = (marketId: string) => ({
   get(key: string) {
     try {
       const doc = JSON.parse(localStorage.getItem(key) ?? 'null');
       if (!doc) return null;
       for (const chart of doc.charts ?? []) {
         delete chart.rendererConfig;
-        delete chart.symbol;
+        chart.symbol = marketId;
       }
       return JSON.stringify(doc);
     } catch {
@@ -98,7 +100,7 @@ const chartStorage = {
       localStorage.setItem(key, value);
     } catch {}
   },
-};
+});
 
 /** "binance:BTC-USD" or "btc-usd" to "BTC-USD". */
 const marketOf = (symbol: string | undefined) => (symbol ?? '').split(':').pop()!.toUpperCase();
@@ -157,7 +159,7 @@ export function Chart({ marketId, onMarketChange, oraclePrice, positions }: Prop
         locale: latest.current.locale,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         persist: 'aura.chart',
-        storage: chartStorage,
+        storage: chartStorage(latest.current.marketId),
         watermark: false,
       });
       workspace.current = ws;
@@ -167,10 +169,6 @@ export function Chart({ marketId, onMarketChange, oraclePrice, positions }: Prop
       });
 
       // The page's market tabs and the chart's own symbol search stay in step, both ways.
-      // A restored chart may remember another market; the page's choice wins.
-      if (marketOf(ws.chart.market.symbol) !== latest.current.marketId) {
-        void ws.chart.setMarket({ symbol: latest.current.marketId });
-      }
       cleanup.push(
         ws.chart.on('market:changed', ({ symbol }) => {
           const id = marketOf(symbol);
