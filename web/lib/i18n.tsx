@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo } from 'react';
 import type { Locale } from './format.ts';
 
 // Voice (brand book): sentence case, buttons start with a verb, errors say what went wrong and how to fix it.
@@ -15,10 +15,17 @@ const en = {
   'wallet.disconnect': 'Disconnect',
   'wallet.copy': 'Copy address',
   'wallet.reset': 'Reset demo data',
+  'wallet.copied': 'Copied',
+  'wallet.explorer': 'View on explorer',
+  'wallet.pick.title': 'Connect a wallet',
+  'wallet.pick.body': 'Aura runs on NEAR testnet. Pick a wallet that holds a testnet account; you approve every transaction there.',
+  'wallet.pick.empty': 'Can’t load the wallet list. Check your connection and try again.',
+  'wallet.connecting': 'Connecting {wallet}…',
+  'wallet.connected': 'Connected with {wallet}',
+  'wallet.failed.title': 'Wallet not connected',
+  'wallet.failed.body': '{wallet} was closed or turned the request down. Try again, or pick another wallet.',
   'theme.toLight': 'Switch to light theme',
   'theme.toDark': 'Switch to dark theme',
-  'locale.switch': 'Ganti bahasa ke Indonesia',
-  'banner.prototype': 'Unaudited hackathon prototype. Use small amounts only.',
   'banner.demo': 'Demo mode. Reference prices are live; balances, fills and the vault are simulated in your browser.',
   'paused.title': 'Trading is paused',
   'paused.body': 'You can still close positions and withdraw.',
@@ -42,9 +49,20 @@ const en = {
   'price.waiting': 'Waiting',
 
   'chart.label': 'Price chart',
-  'chart.oracle': 'Oracle',
   'chart.entry': 'Entry',
   'chart.liq': 'Liq.',
+
+  'book.title': 'Order book',
+  'book.price': 'Price (USD)',
+  'book.bid': 'Bid (USD)',
+  'book.ask': 'Ask (USD)',
+  'book.size': 'Size ({base})',
+  'book.total': 'Total ({base})',
+  'book.asks': 'Asks, sell orders',
+  'book.bids': 'Bids, buy orders',
+  'book.oracle': 'Oracle · fills here',
+  'book.note': 'Reference book from Hyperliquid perps. Aura fills every order at the oracle price, with the vault on the other side.',
+  'book.error': 'Can’t load the reference book. Retrying every few seconds.',
 
   'dock.label': 'Positions and market details',
   'info.title': 'Market details',
@@ -118,6 +136,20 @@ const en = {
   'amount.over': 'Enter {max} USDC or less.',
 
   'positions.title': 'Open positions',
+  'col.price': 'Price',
+  'history.title': 'Trade history',
+  'history.connect': 'Connect a wallet to see your trades.',
+  'history.empty': 'No trades yet. Opens, closes and liquidations show up here.',
+  'history.demo': 'Trade history is read from the chain, so demo mode has none.',
+  'history.error': 'Can’t load your trade history right now. It will retry when you come back to this tab.',
+  'history.col.type': 'Type',
+  'history.col.fee': 'Fee',
+  'history.col.realized': 'Realized PnL',
+  'history.col.time': 'Time',
+  'history.col.tx': 'View transaction',
+  'history.open': 'Open',
+  'history.close': 'Close',
+  'history.liquidate': 'Liquidated',
   'positions.empty': 'No open positions yet. Open your first one from the form.',
   'positions.connect': 'Connect a wallet to see your positions.',
   'positions.col.market': 'Market',
@@ -227,10 +259,17 @@ const id: Record<Key, string> = {
   'wallet.disconnect': 'Putuskan wallet',
   'wallet.copy': 'Salin alamat',
   'wallet.reset': 'Reset data demo',
+  'wallet.copied': 'Tersalin',
+  'wallet.explorer': 'Lihat di explorer',
+  'wallet.pick.title': 'Hubungkan wallet',
+  'wallet.pick.body': 'Aura berjalan di NEAR testnet. Pilih wallet yang punya akun testnet; setiap transaksi kamu setujui di sana.',
+  'wallet.pick.empty': 'Daftar wallet belum bisa dimuat. Periksa koneksi lalu coba lagi.',
+  'wallet.connecting': 'Menghubungkan {wallet}…',
+  'wallet.connected': 'Terhubung dengan {wallet}',
+  'wallet.failed.title': 'Wallet belum terhubung',
+  'wallet.failed.body': '{wallet} ditutup atau menolak permintaan. Coba lagi, atau pilih wallet lain.',
   'theme.toLight': 'Ganti ke tema terang',
   'theme.toDark': 'Ganti ke tema gelap',
-  'locale.switch': 'Switch language to English',
-  'banner.prototype': 'Prototipe hackathon, belum diaudit. Pakai nominal kecil saja.',
   'banner.demo': 'Mode demo. Harga referensi asli; saldo, eksekusi, dan vault disimulasikan di browser kamu.',
   'paused.title': 'Trading sedang dijeda',
   'paused.body': 'Kamu tetap bisa menutup posisi dan menarik dana.',
@@ -254,9 +293,20 @@ const id: Record<Key, string> = {
   'price.waiting': 'Menunggu',
 
   'chart.label': 'Grafik harga',
-  'chart.oracle': 'Oracle',
   'chart.entry': 'Masuk',
   'chart.liq': 'Likuidasi',
+
+  'book.title': 'Order book',
+  'book.price': 'Harga (USD)',
+  'book.bid': 'Bid (USD)',
+  'book.ask': 'Ask (USD)',
+  'book.size': 'Jumlah ({base})',
+  'book.total': 'Total ({base})',
+  'book.asks': 'Ask, order jual',
+  'book.bids': 'Bid, order beli',
+  'book.oracle': 'Oracle · eksekusi di sini',
+  'book.note': 'Order book referensi dari perp Hyperliquid. Aura mengeksekusi setiap order di harga oracle, dengan vault sebagai lawan.',
+  'book.error': 'Order book referensi belum bisa dimuat. Mencoba lagi tiap beberapa detik.',
 
   'dock.label': 'Posisi dan rincian market',
   'info.title': 'Rincian market',
@@ -330,6 +380,20 @@ const id: Record<Key, string> = {
   'amount.over': 'Isi paling banyak {max} USDC.',
 
   'positions.title': 'Posisi terbuka',
+  'col.price': 'Harga',
+  'history.title': 'Riwayat trade',
+  'history.connect': 'Hubungkan wallet untuk melihat trade kamu.',
+  'history.empty': 'Belum ada trade. Buka, tutup, dan likuidasi muncul di sini.',
+  'history.demo': 'Riwayat trade dibaca dari jaringan, jadi mode demo tidak punya.',
+  'history.error': 'Riwayat trade belum bisa dimuat. Akan dicoba lagi saat kamu kembali ke tab ini.',
+  'history.col.type': 'Jenis',
+  'history.col.fee': 'Biaya',
+  'history.col.realized': 'PnL terealisasi',
+  'history.col.time': 'Waktu',
+  'history.col.tx': 'Lihat transaksi',
+  'history.open': 'Buka',
+  'history.close': 'Tutup',
+  'history.liquidate': 'Dilikuidasi',
   'positions.empty': 'Belum ada posisi. Buka posisi pertamamu dari formulir.',
   'positions.connect': 'Hubungkan wallet untuk melihat posisi kamu.',
   'positions.col.market': 'Market',
@@ -427,38 +491,25 @@ const id: Record<Key, string> = {
 };
 
 const DICT: Record<Locale, Record<Key, string>> = { en, id };
-const STORE = 'aura.locale';
 
 type Vars = Record<string, string | number>;
 export type T = (key: Key, vars?: Vars) => string;
 
-const I18n = createContext<{ locale: Locale; setLocale: (l: Locale) => void; t: T }>(null!);
+const I18n = createContext<{ locale: Locale; t: T }>(null!);
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  // English first so server and client render the same markup; the saved choice applies after mount.
-  const [locale, setLocaleState] = useState<Locale>('en');
-
-  useEffect(() => {
-    try {
-      if (localStorage.getItem(STORE) === 'id') setLocaleState('id');
-    } catch {}
-  }, []);
+  // English only since 15 Nov: the language button is gone, so a choice saved earlier in `aura.locale` is no
+  // longer read (it would leave a visitor in Indonesian with no way back). The `id` dictionary stays for now.
+  const locale: Locale = 'en';
 
   useEffect(() => {
     document.documentElement.lang = locale;
-  }, [locale]);
-
-  const setLocale = useCallback((l: Locale) => {
-    setLocaleState(l);
-    try {
-      localStorage.setItem(STORE, l);
-    } catch {}
   }, []);
 
   const value = useMemo(() => {
     const t: T = (key, vars) => DICT[locale][key].replace(/\{(\w+)\}/g, (_, k) => String(vars?.[k] ?? ''));
-    return { locale, setLocale, t };
-  }, [locale, setLocale]);
+    return { locale, t };
+  }, []);
 
   return <I18n.Provider value={value}>{children}</I18n.Provider>;
 }

@@ -68,9 +68,7 @@ export function MarketInfo({ market, hidden }: { market?: MarketView; hidden?: b
             <Row label={t('info.rules.mm')}>{pct(cfg.maintenance_margin_bps, 0)}</Row>
             <Row label={t('info.rules.fee')}>{pct(cfg.fee_bps, 1)}</Row>
             <Row label={t('info.rules.exec')}>
-              <span style={{ fontFamily: 'var(--font-sans)' }}>
-                {t(cfg.two_step ? 'info.rules.exec.twoStep' : 'info.rules.exec.instant')}
-              </span>
+              {t(cfg.two_step ? 'info.rules.exec.twoStep' : 'info.rules.exec.instant')}
             </Row>
             <Row label={t('info.funding.cap')}>±{pct(cfg.max_funding_bps_per_hour, 2)}</Row>
             <Row label={t('info.oracle.staleAfter')}>{staleAfter}</Row>

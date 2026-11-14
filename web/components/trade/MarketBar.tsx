@@ -1,11 +1,100 @@
 'use client';
 
+import { ChevronDown } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { age, price, signedPct, usd } from '../../lib/format';
 import { useI18n } from '../../lib/i18n';
 import { useAura } from '../../lib/store';
-import { Badge, Delta, Segmented, Skeleton, useNow } from '../ui';
+import { Badge, Delta, Skeleton, cx, useNow } from '../ui';
 
 export const MARKET_IDS = ['BTC-USD', 'ETH-USD', 'NEAR-USD'];
+export const NAMES: Record<string, string> = { 'BTC-USD': 'Bitcoin', 'ETH-USD': 'Ethereum', 'NEAR-USD': 'NEAR Protocol' };
+
+/** Colour for a market's price: the direction of its last oracle move, else its 24h change until a move is seen. */
+export function usePriceDir() {
+  const { priceDir, tickers } = useAura();
+  return (id: string) => {
+    const change = tickers[id]?.changePct ?? 0;
+    return priceDir[id] ?? (change > 0 ? 'up' : change < 0 ? 'down' : undefined);
+  };
+}
+
+/** Market dropdown: a listbox with the oracle price and 24h change per market. Arrows move, Enter picks, Esc closes. */
+function MarketPicker({ ids, marketId, onSelect }: { ids: string[]; marketId: string; onSelect: (id: string) => void }) {
+  const { t, locale } = useI18n();
+  const { markets, tickers } = useAura();
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const priceOf = (id: string) => {
+    const m = markets.find((x) => x.id === id);
+    return m && m.price !== '0' ? price(m.price, locale) : null;
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    root.current?.querySelector<HTMLElement>('[role="option"][aria-selected="true"]')?.focus();
+    const onPointer = (e: PointerEvent) => !root.current?.contains(e.target as Node) && setOpen(false);
+    document.addEventListener('pointerdown', onPointer);
+    return () => document.removeEventListener('pointerdown', onPointer);
+  }, [open]);
+
+  const close = () => {
+    setOpen(false);
+    trigger.current?.focus();
+  };
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    const step = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0;
+    if (!open) {
+      if (step) (e.preventDefault(), setOpen(true));
+      return;
+    }
+    if (e.key === 'Escape') return close();
+    if (e.key === 'Tab') return setOpen(false);
+    if (!step) return;
+    e.preventDefault();
+    const items = [...(root.current?.querySelectorAll<HTMLElement>('[role="option"]') ?? [])];
+    items[(items.indexOf(document.activeElement as HTMLElement) + step + items.length) % items.length]?.focus();
+  };
+
+  return (
+    <div className="mpick" ref={root} onKeyDown={onKeyDown}>
+      <button
+        ref={trigger} type="button" className="mpick__face" aria-haspopup="listbox" aria-expanded={open}
+        aria-label={`${t('markets.label')}: ${marketId}`} onClick={() => setOpen(!open)}
+      >
+        <span className="mpick__sym">{marketId}</span>
+        <span className="mpick__px num">{priceOf(marketId) ?? <Skeleton width={56} />}</span>
+        <ChevronDown className="mpick__chev" size={16} strokeWidth={2} aria-hidden />
+      </button>
+      {open && (
+        <div className="mpick__panel">
+          <div className="mpick__head" aria-hidden>
+            <span>{t('markets.label')}</span>
+            <span>{t('col.price')}</span>
+            <span>{t('stat.change')}</span>
+          </div>
+          <div role="listbox" aria-label={t('markets.label')}>
+            {ids.map((id) => {
+              const ticker = tickers[id];
+              return (
+                <button
+                  key={id} type="button" role="option" aria-selected={id === marketId} className="mpick__opt"
+                  onClick={() => (onSelect(id), close())}
+                >
+                  <span className="mpick__name"><b>{id}</b><small>{NAMES[id] ?? ''}</small></span>
+                  <span className="num">{priceOf(id) ?? '–'}</span>
+                  {/* Neutral in the list, at the owner's request: the arrow and sign carry the direction. */}
+                  <span className="num">{ticker ? <Delta sign={ticker.changePct}>{signedPct(ticker.changePct, locale)}</Delta> : '–'}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 /** Signed funding rate in percent per hour (the view reports bps/hour × 1e6). */
 export const fundingPct = (x1e6: string) => Number(x1e6) / 1e8;
@@ -13,6 +102,7 @@ export const fundingPct = (x1e6: string) => Number(x1e6) / 1e8;
 export function MarketBar({ marketId, onSelect }: { marketId: string; onSelect: (id: string) => void }) {
   const { t, locale } = useI18n();
   const { markets, tickers } = useAura();
+  const dirOf = usePriceDir();
   const now = useNow();
   const market = markets.find((m) => m.id === marketId);
   const ticker = tickers[marketId];
@@ -22,25 +112,12 @@ export function MarketBar({ marketId, onSelect }: { marketId: string; onSelect: 
 
   return (
     <section className="panel mbar">
-      <Segmented
-        className="mtabs" itemClassName="mtab" label={t('markets.label')} value={marketId} onChange={onSelect}
-        options={ids.map((id) => {
-          const m = markets.find((x) => x.id === id);
-          return {
-            value: id,
-            label: (
-              <>
-                <span className="mtab__sym">{id}</span>
-                <span className="mtab__px num">{m && m.price !== '0' ? price(m.price, locale) : <Skeleton width={48} />}</span>
-              </>
-            ),
-          };
-        })}
-      />
+      <MarketPicker ids={ids} marketId={marketId} onSelect={onSelect} />
       <dl className="stats">
         <div className="stat stat--price">
-          <dt>{t('stat.price')}</dt>
-          <dd className="num">{hasPrice ? price(market.price, locale) : <Skeleton width={96} />}</dd>
+          {/* No visible label, at the owner's request: the big number is the price. Screen readers still hear it. */}
+          <dt className="sr-only">{t('stat.price')}</dt>
+          <dd className={cx('num', dirOf(marketId))}>{hasPrice ? price(market.price, locale) : <Skeleton width={96} />}</dd>
         </div>
         {ticker && (
           <>

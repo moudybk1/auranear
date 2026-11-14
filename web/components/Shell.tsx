@@ -1,19 +1,22 @@
 'use client';
 
-import { ChartCandlestick, ChevronDown, Copy, ExternalLink, Languages, LogOut, Moon, RotateCcw, Sun, Vault, Wallet, X } from 'lucide-react';
+import { ChartCandlestick, Check, ChevronDown, ChevronRight, Copy, ExternalLink, LogOut, Moon, RotateCcw, Sun, Vault, Wallet, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { CONTRACT_ID, DEMO, EXPLORER, NETWORK, REPO_URL } from '../lib/config';
 import { shortAccount } from '../lib/format';
 import { useI18n } from '../lib/i18n';
+import { listWallets, type WalletInfo } from '../lib/near';
 import { useAura, type Toast } from '../lib/store';
 import { Logo, LogoMark } from './Logo';
-import { Badge, Button, StatusIcon, cx } from './ui';
+import { Badge, Button, Dialog, Skeleton, StatusIcon, cx } from './ui';
 
 const icon = { size: 16, strokeWidth: 1.75, 'aria-hidden': true } as const;
 
 export function Shell({ children }: { children: React.ReactNode }) {
+  // The landing page brings its own navigation and footer.
+  if (usePathname() === '/') return children;
   return (
     <div className="app">
       <Header />
@@ -22,7 +25,53 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <StatusBar />
       <TabBar />
       <Toasts />
+      <WalletPicker />
     </div>
+  );
+}
+
+/** Aura's own wallet picker over NEAR Connect's wallet list. Every "Connect wallet" button opens it (lib/store.tsx). */
+function WalletPicker() {
+  const { t } = useI18n();
+  const { picker, closePicker, connectWith } = useAura();
+  const [wallets, setWallets] = useState<WalletInfo[] | null>(null);
+
+  useEffect(() => {
+    if (!picker || wallets?.length) return;
+    let live = true;
+    listWallets().then((w) => live && setWallets(w), () => live && setWallets([]));
+    return () => {
+      live = false;
+    };
+  }, [picker, wallets]);
+
+  return (
+    <Dialog open={picker} onClose={closePicker} title={t('wallet.pick.title')} closeLabel={t('dialog.close')}>
+      <p className="dlg__text">{t('wallet.pick.body')}</p>
+      {wallets?.length === 0 ? (
+        <p className="dlg__error" role="alert"><StatusIcon tone="danger" size={14} />{t('wallet.pick.empty')}</p>
+      ) : (
+        <ul className="wlist" aria-busy={!wallets}>
+          {(wallets ?? [null, null, null]).map((w, i) => (
+            <li key={w?.id ?? i}>
+              {w ? (
+                <button type="button" className="wlist__item" onClick={() => connectWith(w)}>
+                  {/* eslint-disable-next-line @next/next/no-img-element -- wallet icons come from the NEAR Connect manifest */}
+                  <img src={w.icon} alt="" width={32} height={32} />
+                  <span className="wlist__name">
+                    <b>{w.name}</b>
+                    <small>{w.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}</small>
+                  </span>
+                  <ChevronRight {...icon} />
+                </button>
+              ) : (
+                <div className="wlist__item"><Skeleton width={160} /></div>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </Dialog>
   );
 }
 
@@ -36,11 +85,11 @@ function useNav() {
 }
 
 function Header() {
-  const { t, locale, setLocale } = useI18n();
+  const { t } = useI18n();
   const nav = useNav();
   return (
     <header className="hdr">
-      <Link href="/trade" className="hdr__logo" aria-label="Aura">
+      <Link href="/" className="hdr__logo" aria-label="Aura">
         <Logo className="logo-full" />
         <LogoMark className="logo-mark" />
       </Link>
@@ -51,13 +100,6 @@ function Header() {
       </nav>
       <div className="hdr__right">
         <Badge tone={DEMO ? 'warning' : 'neutral'} dot>{t(DEMO ? 'net.demo' : `net.${NETWORK}`)}</Badge>
-        <button
-          type="button" className="icon-btn" aria-label={t('locale.switch')}
-          onClick={() => setLocale(locale === 'en' ? 'id' : 'en')}
-        >
-          <Languages {...icon} />
-          {locale.toUpperCase()}
-        </button>
         <ThemeToggle />
         <WalletButton />
       </div>
@@ -96,8 +138,9 @@ function ThemeToggle() {
 
 function WalletButton() {
   const { t } = useI18n();
-  const { accountId, connect, disconnect, resetDemo } = useAura();
+  const { accountId, connecting, connect, disconnect, resetDemo } = useAura();
   const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const root = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -113,15 +156,27 @@ function WalletButton() {
   }, [open]);
 
   if (!accountId) {
+    // While a wallet signs in the button says which one. It stays clickable: if that wallet's window was closed
+    // without an answer, the user can pick again.
     return (
       <div className="wallet">
         <Button variant="secondary" size="sm" onClick={connect}>
-          <Wallet {...icon} />
-          {t('wallet.connect')}
+          {connecting ? <span className="aura-spinner" aria-hidden /> : <Wallet {...icon} />}
+          {connecting ? t('wallet.connecting', { wallet: connecting }) : t('wallet.connect')}
         </Button>
       </div>
     );
   }
+
+  // "Copied" only shows when the browser actually allowed the copy.
+  const copy = () =>
+    navigator.clipboard?.writeText(accountId).then(
+      () => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1_500);
+      },
+      () => {},
+    );
 
   const pick = (action: () => void) => () => {
     setOpen(false);
@@ -140,10 +195,17 @@ function WalletButton() {
       {open && (
         <div className="menu" role="menu">
           <p className="menu__id num">{accountId}</p>
-          <button type="button" role="menuitem" onClick={pick(() => void navigator.clipboard?.writeText(accountId))}>
-            <Copy {...icon} />
-            {t('wallet.copy')}
+          {/* Copy keeps the menu open, so the "Copied" confirmation is seen. */}
+          <button type="button" role="menuitem" onClick={copy}>
+            {copied ? <Check {...icon} /> : <Copy {...icon} />}
+            <span aria-live="polite">{t(copied ? 'wallet.copied' : 'wallet.copy')}</span>
           </button>
+          {!DEMO && (
+            <a role="menuitem" href={`${EXPLORER}/address/${accountId}`} target="_blank" rel="noreferrer" onClick={() => setOpen(false)}>
+              <ExternalLink {...icon} />
+              {t('wallet.explorer')}
+            </a>
+          )}
           {DEMO && (
             <button type="button" role="menuitem" onClick={pick(resetDemo)}>
               <RotateCcw {...icon} />
@@ -165,10 +227,13 @@ function Notices() {
   const { config, offline } = useAura();
   return (
     <>
-      <p className="notice" role="note">
-        <StatusIcon tone="warning" size={16} />
-        <span>{t(DEMO ? 'banner.demo' : 'banner.prototype')}</span>
-      </p>
+      {/* Only demo mode gets a standing banner: it says the balances are simulated. */}
+      {DEMO && (
+        <p className="notice" role="note">
+          <StatusIcon tone="warning" size={16} />
+          <span>{t('banner.demo')}</span>
+        </p>
+      )}
       {config?.paused && (
         <p className="notice" role="alert">
           <StatusIcon tone="warning" size={16} />

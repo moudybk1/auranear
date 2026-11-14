@@ -144,6 +144,6 @@ aura/
 | 1. Gladi testnet | Build wasm, deploy, oracle, keeper | Likuidasi oleh keeper berhasil di testnet |
 | 2. Web app | Trade + Vault di testnet | Siklus penuh lewat UI |
 | 3. Mainnet terbatas | Deploy, 3 market, seed vault | Buka/tutup 1 USDC berhasil |
-| 4. Submission | README, video, post X, form | Tersubmit sebelum Sabtu 06:59 WIB |
+| 4. Submission | README, video, post X, form | Tersubmit sebelum Minggu 15 Nov 06:59 WIB |
 | 5. Penjurian | Layanan dijaga hidup sampai 25 Nov | Harga tidak pernah basi di luar batas |
 | 6. Lanjutan | GPU-H100, agent hedging, audit, oracle TEE, NEAR Intents | - |

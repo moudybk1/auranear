@@ -2,8 +2,9 @@
 
 // The chart is Vela by LuxAlgo (@luxalgo/vela, Apache-2.0): its full chart app with timeframes, chart
 // styles, indicators and drawing tools. Aura adds three things: a data feed limited to its own markets,
-// a theme built from the brand tokens, and a layer that draws the oracle price and the user's entry and
-// liquidation levels. The library is loaded in the browser only, when the chart mounts.
+// a theme built from the brand tokens, and a layer that draws the user's entry and liquidation levels. The
+// oracle price is not drawn: the market bar and the order book's middle row show it. The library is loaded in
+// the browser only, when the chart mounts.
 
 import type { RendererLayerDefinition } from '@luxalgo/vela/plugin';
 import type { VelaWorkspace } from '@luxalgo/vela/workspace';
@@ -22,16 +23,16 @@ function palette() {
     muted: token('--ink-muted'),
     line: token('--line'),
     aura: token('--aura'),
-    up: token('--success'),
+    up: token('--up'),
+    down: token('--down'),
     warning: token('--warning'),
     sans: token('--font-sans'),
-    mono: token('--font-mono'),
   };
 }
 
 type Level = { price: number; text: string; color: string; dash: number[] };
 /** What the levels layer paints. The component replaces the list; the layer reads it every frame. */
-const board: { levels: Level[]; ink: string; font: string } = { levels: [], ink: '#000', font: 'monospace' };
+const board: { levels: Level[]; ink: string; font: string } = { levels: [], ink: '#000', font: 'sans-serif' };
 
 const levelsLayer: RendererLayerDefinition = {
   id: 'aura-levels',
@@ -48,7 +49,7 @@ const levelsLayer: RendererLayerDefinition = {
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.setTransform(coords.dpr, 0, 0, coords.dpr, 0, 0);
-        ctx.font = `11px ${board.font}`;
+        ctx.font = `500 12px ${board.font}`;
         ctx.textBaseline = 'middle';
         ctx.lineWidth = 1;
         for (const level of board.levels) {
@@ -77,7 +78,7 @@ const levelsLayer: RendererLayerDefinition = {
 
 // Saved chart state keeps the user's timeframe, chart style, indicators and drawings. Colours are dropped on
 // the way back in: they always come from the Aura theme, so a chart saved in one theme never returns wearing
-// the other. The market is replaced with the page's, because the page's market tabs decide it. It must be
+// the other. The market is replaced with the page's, because the page's market picker decides it. It must be
 // replaced, not removed: Vela 0.10.6 looks up a restored chart without a symbol as "" and shows
 // `No registered provider serves ""`.
 // ponytail: this also forgets cosmetic tweaks made in Vela's settings dialog; keep `rendererConfig` minus its colours if users miss them.
@@ -102,17 +103,16 @@ const chartStorage = (marketId: string) => ({
   },
 });
 
-/** "binance:BTC-USD" or "btc-usd" to "BTC-USD". */
+/** "hyperliquid:BTC-USD" or "btc-usd" to "BTC-USD". */
 const marketOf = (symbol: string | undefined) => (symbol ?? '').split(':').pop()!.toUpperCase();
 
 type Props = {
   marketId: string;
   onMarketChange: (id: string) => void;
-  oraclePrice?: string;
   positions: PositionView[];
 };
 
-export function Chart({ marketId, onMarketChange, oraclePrice, positions }: Props) {
+export function Chart({ marketId, onMarketChange, positions }: Props) {
   const { t, locale } = useI18n();
   const host = useRef<HTMLDivElement>(null);
   const workspace = useRef<VelaWorkspace | null>(null);
@@ -139,11 +139,11 @@ export function Chart({ marketId, onMarketChange, oraclePrice, positions }: Prop
       registerLocale(indonesian.default);
       registerRendererLayer(levelsLayer);
 
-      // Long and up are teal, short and down are neutral: red stays the brand colour, never "loss".
+      // Up candles are green and down candles red (the --up and --down tokens).
       const auraTheme = () => {
         const p = palette();
         return createTheme({
-          colors: { background: p.raised, text: p.ink, grid: p.line, border: p.line, up: p.up, down: p.ink, accent: p.aura },
+          colors: { background: p.raised, text: p.ink, grid: p.line, border: p.line, up: p.up, down: p.down, accent: p.aura },
           font: p.sans,
           radius: 'md',
         });
@@ -154,7 +154,7 @@ export function Chart({ marketId, onMarketChange, oraclePrice, positions }: Prop
         symbol: latest.current.marketId,
         timeframe: '15',
         live: true,
-        providers: { binance: () => auraFeed }, // the key is the venue label the chart shows beside the symbol
+        providers: { hyperliquid: () => auraFeed }, // the key is the venue label the chart shows beside the symbol
         theme: auraTheme(),
         locale: latest.current.locale,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -168,7 +168,7 @@ export function Chart({ marketId, onMarketChange, oraclePrice, positions }: Prop
         ws.destroy();
       });
 
-      // The page's market tabs and the chart's own symbol search stay in step, both ways.
+      // The page's market picker and the chart's own symbol search stay in step, both ways.
       cleanup.push(
         ws.chart.on('market:changed', ({ symbol }) => {
           const id = marketOf(symbol);
@@ -181,7 +181,7 @@ export function Chart({ marketId, onMarketChange, oraclePrice, positions }: Prop
       const paintVolume = () => {
         if (!ws.chart.presentNativeIndicators().includes('volume')) return;
         const p = palette();
-        ws.chart.addNativeIndicator('volume').setInputs({ upColor: p.up, downColor: p.muted }); // returns the existing one
+        ws.chart.addNativeIndicator('volume').setInputs({ upColor: p.up, downColor: p.down }); // returns the existing one
       };
       paintVolume();
       cleanup.push(ws.chart.on('indicator:added', paintVolume));
@@ -222,7 +222,7 @@ export function Chart({ marketId, onMarketChange, oraclePrice, positions }: Prop
     workspace.current?.setLocale(locale);
   }, [locale, mounted]);
 
-  // Oracle price plus entry and liquidation levels of the user's positions in this market.
+  // Entry and liquidation levels of the user's positions in this market.
   const levelsKey = positions.map((p) => `${p.id}:${p.liquidation_price}`).join(',');
   useEffect(() => {
     const p = palette();
@@ -231,17 +231,16 @@ export function Chart({ marketId, onMarketChange, oraclePrice, positions }: Prop
       if (!value || value === '0') return;
       list.push({ price: Number(value) / 1e6, text: `${label} ${price(value, locale)}`, color, dash });
     };
-    add(oraclePrice, t('chart.oracle'), p.ink, [5, 4]);
     for (const pos of positions) {
       add(pos.entry_price, `${t('chart.entry')} ${t(pos.is_long ? 'order.long' : 'order.short')}`, p.muted, [2, 3]);
       add(pos.liquidation_price, t('chart.liq'), p.warning, []);
     }
     board.levels = list;
     board.ink = p.raised;
-    board.font = p.mono;
+    board.font = p.sans;
     workspace.current?.chart.resize(); // repaint the layer with the new levels
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [oraclePrice, levelsKey, locale, t, mounted, theme]);
+  }, [levelsKey, locale, t, mounted, theme]);
 
   return (
     <section className="panel chart" aria-label={t('chart.label')}>

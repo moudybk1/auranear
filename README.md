@@ -4,13 +4,13 @@
 
 Built at NEAR HACKATHON (1–14 Nov 2026).
 
-> Hackathon prototype. **Not audited.** Mainnet runs with small hard caps (vault ≤ 200 USDC, ≤ 20 USDC per trader, ≤ 50 USDC per position). Use tiny amounts only.
+> Hackathon prototype. **Not audited.** It runs on NEAR **testnet** only, with a test token that has no value. Nothing is deployed on mainnet.
 
 | | |
 |---|---|
-| Live demo | _coming soon_ |
+| Live demo | <https://aura-perps.vercel.app> (testnet) |
 | Demo video / X post | _coming soon_ |
-| Contract | Testnet: [`perps.aura-perps.testnet`](https://testnet.nearblocks.io/address/perps.aura-perps.testnet). Mainnet: _coming soon_ |
+| Contract | Testnet: [`perps.aura-perps.testnet`](https://testnet.nearblocks.io/address/perps.aura-perps.testnet). Not deployed on mainnet |
 
 ## Status (14 Nov 2026)
 
@@ -18,11 +18,11 @@ Built at NEAR HACKATHON (1–14 Nov 2026).
 |---|---|---|
 | Perps contract | `contracts/perps` | 40 unit tests pass. Built to wasm (281 KB) and deployed on **testnet** at `perps.aura-perps.testnet` with 3 markets and a 500 tUSD seeded vault. One deposit, open, close, withdraw and LP withdraw cycle ran there and the token balance matched the accounting. Not on mainnet |
 | Test token | `contracts/mock-ft` | Deployed on testnet at `tusd.aura-perps.testnet` (testnet only, no value) |
-| Deploy scripts | `scripts/` | `01`–`04` run on testnet (near-cli-rs 0.30.1, cargo-near 0.23.0). `05` not run yet. `06-push-prices.sh` pushes one manual testnet price per market, a fallback for when the oracle service is not running |
+| Deploy scripts | `scripts/` | `01`–`04` run on testnet (near-cli-rs 0.30.1, cargo-near 0.23.0). `05` not run yet. `07-force-price.sh` is a testnet demo helper: the owner forces a price down so a 10x position gets liquidated. `06-push-prices.sh` pushes one manual testnet price per market, a fallback for when the oracle service is not running |
 | Design system | `web/styles/`, `web/app/fonts/` | The Aura brand kit's tokens and component styles, copied into the web app as `aura-tokens.css` and `aura-components.css`, with self-hosted fonts. The kit's own folder is not in this repo |
 | Specs | `docs/`, `AGENTS.md` | Complete |
-| Oracle, keeper, `/health` | `services/` | Built 13 Nov: one Node.js process. The oracle pushes the median of three public spot tickers (Binance, Gate, HTX) when a price moves 30 bps or every 300 s, the keeper liquidates, and `GET /health` reports both. Run against testnet from a laptop: the three markets went from 19 hours stale to fresh and stayed fresh through a 30-minute check (60 samples, oldest price 303 s); a 10x test position was liquidated by the keeper about 20 s after the owner forced NEAR-USD down 6%; the oracle then walked the price back in two pushes, inside the contract's 5% jump limit. **Not hosted yet**, so prices go stale 10 minutes after that process stops. No price-history API yet (see the note at the top of `docs/SERVICES_SPEC.md`) |
-| Web app | `web/` | Trade and Vault built. With `web/.env.local` it reads the testnet contract; without it, it runs in demo mode (in-browser simulator). Deposit, open long, close and withdraw were signed from the UI on testnet through the NEAR CLI wallet. In demo mode the whole cycle runs, including open short and vault deposit and withdraw (14 Nov). **Not signed on testnet from the UI yet:** new-account activation, open short, vault deposit and withdraw, and any browser-extension wallet. See `web/README.md` |
+| Oracle, keeper, `/health` | `services/` | Built 13 Nov: one Node.js process. The oracle pushes the median of three public spot tickers (Binance, Gate, HTX) when a price moves 30 bps or every 300 s, the keeper liquidates, and `GET /health` reports both. Run against testnet from a laptop: the three markets went from 19 hours stale to fresh and stayed fresh through a 30-minute check (60 samples, oldest price 303 s); a 10x test position was liquidated by the keeper about 20 s after the owner forced NEAR-USD down 6%; the oracle then walked the price back in two pushes, inside the contract's 5% jump limit. Hosted on a VPS since 14 Nov under systemd: after a forced kill it was answering `/health` again in 7 s. From there the keeper liquidated two 10x test positions within seconds of the owner forcing NEAR-USD down 20%, and the oracle walked the price back in five pushes. Prices go stale 10 minutes after that process stops, and nothing outside the server watches `/health` yet. No price-history API yet (see the note at the top of `docs/SERVICES_SPEC.md`) |
+| Web app | `web/` | Trade and Vault built, hosted at <https://aura-perps.vercel.app> against the testnet contract. Without `web/.env.local` a local copy runs in demo mode (in-browser simulator). On 14 Nov a brand-new testnet account went through the whole cycle from the UI, on a local copy of the code that is hosted, signing through the NEAR CLI wallet: faucet, activation with a deposit, open short, close, vault deposit, vault withdraw, withdraw. Afterwards the contract's token balance equalled user balances + vault assets + insurance. Open long was signed the same way on 13 Nov. The liquidation notice and the paused banner were checked on testnet too. **Not tried:** browser-extension and web wallets, and signing on the hosted site itself (there it was checked for loading, reading the contract, and connecting the NEAR CLI wallet). See `web/README.md` |
 
 Building this? Start with [`AGENTS.md`](AGENTS.md).
 
@@ -54,7 +54,17 @@ Trader / LP ──► Aura perps contract (vault, positions, markets + oracle, l
 
 ## Run it
 
-### Try the web app in 2 minutes (demo mode, no NEAR account needed)
+### Try the hosted demo (testnet)
+
+Open <https://aura-perps.vercel.app>. Prices, markets and the vault load without a wallet.
+
+To trade you need a NEAR testnet account in a wallet that NEAR Connect lists:
+
+1. Connect the wallet and click **Activate account** (a one-time 0.02 NEAR storage deposit).
+2. In the same dialog, **Get 1,000 test USDC** mints test tokens to your wallet. Enter an amount to deposit it.
+3. Open a long or a short, close it, and withdraw. The Vault page takes LP deposits and withdrawals.
+
+### Try the web app locally in 2 minutes (demo mode, no NEAR account needed)
 
 ```bash
 cd web
@@ -74,7 +84,7 @@ NEXT_PUBLIC_CONTRACT_ID=perps.aura-perps.testnet
 NEXT_PUBLIC_USDC_ID=tusd.aura-perps.testnet
 ```
 
-The header badge switches to Testnet and prices, markets and the vault are read from the contract. To trade you need a NEAR testnet account in a wallet that NEAR Connect lists; the deposit dialog has a button that mints 1,000 test USDC. If the Oracle update cell shows Stale, the oracle service is not running (it is not hosted yet) and opening positions is disabled until a fresh price arrives. Details and what has been run: [`web/README.md`](web/README.md).
+The header badge switches to Testnet and prices, markets and the vault are read from the contract. To trade you need a NEAR testnet account in a wallet that NEAR Connect lists; the deposit dialog has a button that mints 1,000 test USDC. If the Oracle update cell shows Stale, the oracle service is down and opening positions is disabled until a fresh price arrives. Details and what has been run: [`web/README.md`](web/README.md).
 
 ### Contract tests (no NEAR account needed)
 
@@ -129,9 +139,14 @@ The docs are written in Indonesian. Code is in English; the UI is specified in E
 
 ## Trust assumptions and known limitations
 
-- Not audited. Caps are deliberately tiny.
+- Not audited, and testnet only. The testnet caps are loose (vault 100,000, 10,000 per trader, 10,000 per position, in test USDC). A mainnet launch would start with small hard caps (vault ≤ 200 USDC, ≤ 20 per trader, ≤ 50 per position).
+- Known contract bugs, not fixed yet. Each was reproduced with a throwaway test during review:
+  - The 0.02 NEAR storage deposit can be drained. Withdraw everything, call `storage_unregister`, and if the token transfer then fails, the refund callback re-creates the account without a deposit. Each round takes 0.02 NEAR from the contract. This works with the test token; whether a native USDC transfer can be made to fail was not checked.
+  - A vault deposit made while NAV is zero but shares still exist is diluted by those shares (deposit 100, keep about 9 in the case tested). Rare; the fix is to refund such a deposit.
+  - Funding rounding leaves −1 to −2 micro-USD of pending funding per closed position, so NAV sits that far below vault assets. The token balance still matches the accounting.
+- Liquidation is permissionless, but the only keeper running is the team's, and it scans every 15 seconds.
 - The oracle is a single account run by the team. It pushes the median of three exchange tickers (Binance, Gate, HTX), all quoted in USDT and treated as USD.
-- The owner can pause, change parameters and force a price. There is no code-upgrade function; the contract account's keys are deleted after the final deploy.
+- The owner can pause, change parameters and force a price. The contract has no code-upgrade function, but on testnet the contract account still has its key, so the team can redeploy the code. The plan for mainnet is to delete that key after the final deploy.
 - On instant-execution markets a trader who sees an exchange price move before the oracle pushes it can profit at the vault's expense; the 0.1% fee per side only partly covers this.
 - Full list: [`docs/SECURITY.md`](docs/SECURITY.md).
 

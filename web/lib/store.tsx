@@ -33,6 +33,8 @@ type Data = {
   account?: AccountView | null;
   positions: PositionView[];
   walletUsdc?: string;
+  /** Direction of each market's last oracle price move seen in this tab. */
+  priceDir: Record<string, 'up' | 'down'>;
 };
 
 type Store = Data & {
@@ -43,7 +45,14 @@ type Store = Data & {
   /** A transaction is with the wallet. */
   pending: boolean;
   toasts: Toast[];
+  /** Live mode: the wallet picker is open. */
+  picker: boolean;
+  /** Live mode: the name of the wallet that is signing the user in. */
+  connecting: string | null;
+  /** Demo mode connects the test account; live mode opens the wallet picker. */
   connect: () => void;
+  connectWith: (wallet: near.WalletInfo) => void;
+  closePicker: () => void;
   disconnect: () => void;
   resetDemo: () => void;
   /** Sends transactions in one wallet approval. Resolves true when they were accepted. */
@@ -82,11 +91,13 @@ function view<T>(contractId: string, method: string, args: Record<string, string
 export function AuraProvider({ children }: { children: React.ReactNode }) {
   const { t } = useI18n();
   const [accountId, setAccountId] = useState<string | null>(null);
-  const [data, setData] = useState<Data>({ markets: [], positions: [] });
+  const [data, setData] = useState<Data>({ markets: [], positions: [], priceDir: {} });
   const [tickers, setTickers] = useState<Record<string, Ticker>>({});
   const [offline, setOffline] = useState(false);
   const [pending, setPending] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [picker, setPicker] = useState(false);
+  const [connecting, setConnecting] = useState<string | null>(null);
 
   const account = useRef<string | null>(null);
   const seenPositions = useRef<Set<string> | null>(null);
@@ -138,7 +149,14 @@ export function AuraProvider({ children }: { children: React.ReactNode }) {
       }
       seenPositions.current = id ? ids : null;
 
-      setData((d) => ({ config: config ?? d.config, markets, vault, account: acc, positions, walletUsdc }));
+      setData((d) => {
+        const priceDir = { ...d.priceDir };
+        for (const m of markets) {
+          const prev = d.markets.find((x) => x.id === m.id)?.price;
+          if (prev && prev !== '0' && m.price !== '0' && prev !== m.price) priceDir[m.id] = BigInt(m.price) > BigInt(prev) ? 'up' : 'down';
+        }
+        return { config: config ?? d.config, markets, vault, account: acc, positions, walletUsdc, priceDir };
+      });
       setOffline(false);
     } catch {
       setOffline(true);
@@ -165,7 +183,7 @@ export function AuraProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const connect = useCallback(() => {
-    if (!DEMO) return void near.connectWallet().catch(() => {});
+    if (!DEMO) return setPicker(true);
     getSim().faucet(SIM_ACCOUNT);
     saveSim();
     try {
@@ -173,6 +191,25 @@ export function AuraProvider({ children }: { children: React.ReactNode }) {
     } catch {}
     setAccountId(SIM_ACCOUNT);
   }, []);
+
+  const closePicker = useCallback(() => setPicker(false), []);
+
+  const connectWith = useCallback(
+    async (wallet: near.WalletInfo) => {
+      // The picker closes first: a wallet draws its sign-in window in the page, and a modal dialog would cover it.
+      setPicker(false);
+      setConnecting(wallet.name);
+      try {
+        await near.connectWallet(wallet.id);
+        notify({ tone: 'success', title: tRef.current('wallet.connected', { wallet: wallet.name }) });
+      } catch {
+        notify({ tone: 'warning', title: tRef.current('wallet.failed.title'), body: tRef.current('wallet.failed.body', { wallet: wallet.name }) });
+      } finally {
+        setConnecting(null);
+      }
+    },
+    [notify],
+  );
 
   const disconnect = useCallback(() => {
     if (!DEMO) return void near.disconnectWallet().catch(() => {});
@@ -228,8 +265,11 @@ export function AuraProvider({ children }: { children: React.ReactNode }) {
   );
 
   const store = useMemo<Store>(
-    () => ({ ...data, accountId, tickers, offline, pending, toasts, connect, disconnect, resetDemo, send, dismiss }),
-    [data, accountId, tickers, offline, pending, toasts, connect, disconnect, resetDemo, send, dismiss],
+    () => ({
+      ...data, accountId, tickers, offline, pending, toasts, picker, connecting,
+      connect, connectWith, closePicker, disconnect, resetDemo, send, dismiss,
+    }),
+    [data, accountId, tickers, offline, pending, toasts, picker, connecting, connect, connectWith, closePicker, disconnect, resetDemo, send, dismiss],
   );
 
   return <Ctx.Provider value={store}>{children}</Ctx.Provider>;

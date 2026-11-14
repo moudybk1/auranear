@@ -4,7 +4,7 @@
 
 | Hal | Nilai |
 |---|---|
-| Batas submit | 14 Nov 2026 23:59 UTC = **Sabtu 15 Nov 06:59 WIB** |
+| Batas submit | 14 Nov 2026 23:59 UTC = **Minggu 15 Nov 06:59 WIB** |
 | Penjurian | 16–18 Nov 2026 |
 | Track | Unstoppable DeFi (utama), Agent Economy (bila agent hedging sempat masuk) |
 | Syarat | Repo publik + LICENSE; README yang bisa direproduksi; post X dengan video, @NEARProtocol, #NEARHackathon; form submission; akun mainnet untuk hadiah |
@@ -31,9 +31,9 @@ Urutan potong bila terlambat: lihat `docs/MVP.md` §4. Bila mainnet tidak sempat
 
 ## 3. Daftar periksa submission
 
-- [ ] Repo publik; LICENSE; semua commit setelah 1 Nov
+- [x] Repo publik; LICENSE; semua commit setelah 1 Nov
 - [ ] README: produk dan masalah, tautan demo/video/post, "coba dalam 2 menit", cara jalan lokal, arsitektur, trust assumption, keterbatasan, pengungkapan library dan bantuan AI
-- [ ] Demo di-hosting dan dijaga
+- [x] Demo di-hosting dan dijaga (14 Nov: web di Vercel, layanan di VPS; pemantau luar untuk `/health` belum ada)
 - [ ] Post X: "built at NEAR HACKATHON", @NEARProtocol, #NEARHackathon, video
 - [ ] Form: nama project (Aura), team lead, email, ukuran tim, track, akun NEAR mainnet, tautan repo, tautan post, deskripsi 20–2.000 karakter
 
@@ -45,6 +45,34 @@ Urutan potong bila terlambat: lihat `docs/MVP.md` §4. Bila mainnet tidak sempat
 4. 1:20–1:50 — Harga bergerak; keeper melikuidasi posisi 10x; transaksi di explorer.
 5. 1:50–2:20 — Tutup posisi, tarik USDC, harga share vault berubah.
 6. 2:20–2:50 — Pengaman (batas, pause, cek harga basi), keterbatasan yang diakui, dan langkah berikutnya: market harga sewa GPU untuk hedging biaya compute agent.
+
+### Runbook demo (diuji 14 Nov di testnet)
+
+Sebelum merekam:
+
+- Buka <https://aura-perps.vercel.app>. Sel "Oracle update" tidak boleh "Stale"; bila basi, layanan di VPS mati (`docs/DEPLOYMENT.md` §6).
+- Siapkan akun testnet dengan sedikit NEAR (aktivasi 0,02 NEAR + gas). USDC tes diambil dari tombol "Get 1,000 test USDC" di dialog deposit.
+- Wallet yang sudah teruji hanya NEAR CLI; lembar wallet-nya butuh 7 sampai 15 detik untuk muncul. Wallet web atau ekstensi (Meteor, Intear) belum teruji: coba satu transaksi dulu sebelum merekam.
+- Cadangan bila wallet bermasalah: mode demo (`cd web && npm run dev` tanpa `.env.local`), semua alur berjalan di browser tanpa transaksi.
+
+Urutan yang sudah dijalankan dari UI:
+
+1. Vault: "Deposit to vault", lalu nilai posisi dan jumlah share tampil.
+2. Trade: "Activate account" dengan deposit, buka long BTC-USD; ringkasan order menampilkan harga likuidasi sebelum dikirim.
+3. Likuidasi: buka long NEAR-USD 10x dengan jaminan kecil (minimal 1 USDC), lalu owner menggeser harga:
+
+   ```bash
+   OWNER=aura-perps.testnet ./scripts/07-force-price.sh        # NEAR-USD turun 20%
+   ```
+
+   Baris posisi menampilkan "At risk", keeper di VPS melikuidasi dalam hitungan detik (pindaiannya tiap 15 detik), dan toast "Position liquidated" muncul beberapa detik saja. Oracle mengembalikan harga dalam lima dorongan, sekitar 40 detik. Transaksi likuidasi terlihat di <https://testnet.nearblocks.io/address/keeper.aura-perps.testnet>.
+   Jangan memakai geseran kecil: pada −6% oracle memulihkan harga dalam sekitar 8 detik, lebih cepat dari pindaian keeper, dan posisi tidak dilikuidasi.
+4. Tutup posisi BTC-USD, "Withdraw USDC", lalu halaman Vault: harga share naik dari fee dan dari jaminan posisi yang dilikuidasi.
+5. Pause (opsional), oleh owner; banner muncul dan tombol buka posisi terkunci. Lepas lagi sesudahnya:
+
+   ```bash
+   near contract call-function as-transaction perps.aura-perps.testnet set_paused json-args '{"paused":true}' prepaid-gas '30 Tgas' attached-deposit '1 yoctoNEAR' sign-as aura-perps.testnet network-config testnet sign-with-legacy-keychain send
+   ```
 
 ## 5. Setelah submit (sampai 25 Nov)
 

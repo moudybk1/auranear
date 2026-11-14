@@ -27,15 +27,17 @@ MVP adalah semua kebutuhan P0 di `docs/PRD.md` berjalan di mainnet untuk tiga ma
 
 ## 3. Definisi selesai
 
-- [ ] `cargo test` di `contracts/perps`: 40 lulus
-- [ ] Wasm ter-build dan ter-deploy di testnet; 3 market terdaftar
+Keputusan 14 Nov: submission hackathon memakai **testnet saja** (diperbolehkan, lihat `docs/ROADMAP.md` §1). Butir mainnet ditunda sampai bug kontrak yang tercatat di README diperbaiki.
+
+- [x] `cargo test` di `contracts/perps`: 40 lulus (dijalankan ulang 14 Nov)
+- [x] Wasm ter-build dan ter-deploy di testnet; 3 market terdaftar (12 Nov)
 - [x] Oracle menjaga 3 market tetap segar 30 menit tanpa error (13 Nov, dari laptop)
 - [x] Keeper melikuidasi posisi uji di testnet (13 Nov)
-- [ ] Lewat web di testnet: aktivasi, deposit, buka long, buka short, tutup, tarik, setor LP, tarik LP
+- [x] Lewat web di testnet: aktivasi, deposit, buka long, buka short, tutup, tarik, setor LP, tarik LP (buka long 13 Nov dengan akun owner; sisanya 14 Nov dengan akun baru; semuanya lewat wallet NEAR CLI, wallet ekstensi belum dicoba)
 - [ ] UI memakai token design system, tema terang dan gelap, satu tombol primary per tampilan
-- [ ] Harga basi, pause, dan batas guarded launch tampil jelas di UI
-- [ ] Deploy mainnet oleh pemilik; seed vault; satu siklus penuh nominal kecil
-- [ ] Web dan layanan di-hosting; `/health` sehat
+- [ ] Harga basi, pause, dan batas guarded launch tampil jelas di UI (harga basi 12 Nov dan banner pause 14 Nov sudah terlihat; batas guarded launch hanya berlaku di mainnet)
+- [ ] Deploy mainnet oleh pemilik; seed vault; satu siklus penuh nominal kecil (ditunda, lihat keputusan di atas)
+- [x] Web dan layanan di-hosting; `/health` sehat (14 Nov; `/health` baru bisa dicek dari dalam server)
 - [ ] README final + LICENSE; repo publik
 - [ ] Video 2–3 menit; post X dengan @NEARProtocol dan #NEARHackathon; form terkirim
 

@@ -34,6 +34,8 @@ export async function viewCall<T>(contractId: string, method: string, args: obje
 }
 
 let connector: NearConnector | undefined;
+let markReady: (c: NearConnector) => void;
+const ready = new Promise<NearConnector>((resolve) => (markReady = resolve));
 
 /** Loads the connector in the browser only and reports the signed-in account, now and on every change. */
 export async function initWallet(onAccount: (id: string | null) => void) {
@@ -41,7 +43,9 @@ export async function initWallet(onAccount: (id: string | null) => void) {
   connector = new NearConnector({
     network: NETWORK,
     features: { signAndSendTransactions: true, ...(NETWORK === 'testnet' && { testnet: true }) },
+    footerBranding: null, // Aura draws its own wallet picker; a wallet's own window needs no third-party footer
   });
+  markReady(connector);
   connector.on('wallet:signIn', (e) => onAccount(e.accounts[0]?.accountId ?? null));
   connector.on('wallet:signOut', () => onAccount(null));
   try {
@@ -52,7 +56,17 @@ export async function initWallet(onAccount: (id: string | null) => void) {
   }
 }
 
-export const connectWallet = async () => void (await connector?.connect());
+export type WalletInfo = { id: string; name: string; icon: string; website: string };
+
+/** Wallets that can sign batched transactions on this network, in the manifest's order. */
+export async function listWallets(): Promise<WalletInfo[]> {
+  const c = await ready;
+  await c.whenManifestLoaded.catch(() => {});
+  return c.availableWallets.map(({ manifest: m }) => ({ id: m.id, name: m.name, icon: m.icon, website: m.website }));
+}
+
+/** Opens one wallet directly, skipping NEAR Connect's own picker. Throws if it is closed or refuses. */
+export const connectWallet = async (walletId: string) => void (await (await ready).connect({ walletId }));
 export const disconnectWallet = async () => void (await connector?.disconnect());
 
 type Outcome = {

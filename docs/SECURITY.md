@@ -23,7 +23,7 @@ USDC pengguna dan LP di kontrak; kunci owner; kunci oracle; kebenaran harga; ket
 | Mengintip update indeks (market dua langkah) | Trader | Eksekusi pada harga yang lebih baru dari order | `two_step_open_and_close` |
 | Owner menyalahgunakan wewenang | Owner | Tidak ada fungsi upgrade atau penarikan dana oleh owner; wewenang ditulis di README | Tinjauan kode |
 | Frontend palsu / diubah | Penyerang web | Tidak ada rahasia di frontend; wallet menampilkan kontrak dan method | Rancangan |
-| XSS di web | Penyerang | React escaping bawaan; tidak ada `dangerouslySetInnerHTML`; CSP; tidak merender string dari chain sebagai HTML | Tinjauan |
+| XSS di web | Penyerang | React escaping bawaan; tidak ada `dangerouslySetInnerHTML`; tidak merender string dari chain sebagai HTML | Tinjauan |
 | Penyalahgunaan HTTP API | Siapa saja | Hanya GET, CORS terbatas, batas laju, tanpa data rahasia | Rancangan |
 
 ## 3. Wewenang tiap peran
@@ -65,7 +65,8 @@ Aturan: tidak ada kunci atau seed phrase di repo, chat, log, atau screenshot. `.
 - [ ] `withdraw`, `lp_withdraw`, `ft_transfer_call` selalu melampirkan 1 yocto
 - [ ] Alamat kontrak dari env, ditampilkan di footer dengan tautan explorer
 - [ ] Banner "Unaudited prototype" selalu terlihat
-- [ ] Header keamanan: CSP, `X-Frame-Options: DENY`, `Referrer-Policy`
+- [x] Header keamanan: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy` (14 Nov, `web/next.config.ts`)
+- [ ] CSP (butuh daftar host RPC, data chart, dan wallet; belum ada)
 
 **Kontrak (bila diubah)**
 - [ ] State diperbarui sebelum promise; callback memulihkan bila gagal

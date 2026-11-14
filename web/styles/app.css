@@ -8,10 +8,13 @@
   /* Dialog overlay from docs/FRONTEND_SPEC.md §6: ink at 50%. */
   --scrim: rgb(31 18 20 / 0.5);
   --hdr-h: 52px;
+  /* Market direction, at the owner's request (15 Nov): green up, red down, like other exchanges. */
+  --up: #0B7A3E;
+  --down: var(--danger);
 }
-[data-theme='dark'] { --scrim: rgb(0 0 0 / 0.62); }
+[data-theme='dark'] { --scrim: rgb(0 0 0 / 0.62); --up: #3DD68C; }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) { --scrim: rgb(0 0 0 / 0.62); }
+  :root:not([data-theme]) { --scrim: rgb(0 0 0 / 0.62); --up: #3DD68C; }
 }
 
 /* ---------- Base ---------- */
@@ -42,15 +45,18 @@ body {
   button { -webkit-tap-highlight-color: transparent; }
 }
 
-.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+/* Numbers use the text face at medium weight: Funnel Sans digits are all one width, so columns still line up,
+   and they read more easily than the light monospace at the terminal's small sizes. */
+.num { font-family: var(--font-sans); font-weight: 500; font-variant-numeric: tabular-nums; }
 .muted { color: var(--ink-muted); }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 /* A class that sets `display` would otherwise bring a hidden tab panel back. */
 [hidden] { display: none !important; }
 
-/* Direction is never colour alone: every use pairs these with a sign, an arrow or the word. */
-.up { color: var(--success); }
-.down { color: var(--ink); }
+/* Signed values pair these with a sign, an arrow or the word. A price coloured by its last move has the 24h
+   change, with its arrow, beside it in the market bar. */
+.up { color: var(--up); }
+.down { color: var(--down); }
 .flat { color: var(--ink-muted); }
 .delta { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; }
 .delta svg { flex: none; }
@@ -156,7 +162,7 @@ body {
   box-shadow: var(--shadow-md);
 }
 .menu__id { padding: var(--space-2) var(--space-3); color: var(--ink-muted); font-size: 12px; overflow-wrap: anywhere; }
-.menu button {
+.menu button, .menu a {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -169,8 +175,33 @@ body {
   text-align: left;
   cursor: pointer;
 }
-.menu button:hover { background: var(--surface-sunken); }
+.menu button:hover, .menu a:hover { background: var(--surface-sunken); }
+.menu a { color: var(--ink); text-decoration: none; }
 .menu svg { color: var(--ink-muted); }
+
+/* Wallet picker: one row per wallet in the NEAR Connect manifest. */
+.wlist { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.wlist__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 56px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+button.wlist__item:hover { border-color: var(--line-strong); background: var(--surface-sunken); }
+.wlist__item img { flex: none; width: 32px; height: 32px; border-radius: var(--radius-sm); }
+.wlist__name { display: grid; flex: 1; min-width: 0; }
+.wlist__name b { font-size: 14px; line-height: 20px; font-weight: 600; }
+.wlist__name small { color: var(--ink-muted); font-size: 12px; line-height: 16px; }
+.wlist__item svg { flex: none; color: var(--ink-muted); }
 
 .notice {
   display: flex;
@@ -276,32 +307,59 @@ body {
 }
 .terminal .panel { border: 0; border-radius: 0; }
 
-.mbar { grid-area: mbar; flex-direction: row; align-items: stretch; min-height: 52px; overflow-x: auto; scrollbar-width: none; }
-.mtabs { display: flex; flex: none; gap: 2px; padding: 6px; border-right: 1px solid var(--line); }
-.mtab {
+/* Only the stats scroll sideways: a scrolling bar would clip the market dropdown. */
+.mbar { grid-area: mbar; flex-direction: row; align-items: stretch; min-height: 52px; }
+.mpick { position: relative; display: flex; flex: none; padding: 6px; border-right: 1px solid var(--line); }
+.mpick__face {
   display: grid;
+  grid-template-columns: 1fr auto;
   align-content: center;
-  gap: 1px;
-  min-width: 104px;
-  padding: 3px var(--space-3);
-  border: 0;
+  align-items: center;
+  column-gap: var(--space-3);
+  row-gap: 1px;
+  min-width: 148px;
+  padding: 3px var(--space-2) 3px var(--space-3);
+  border: 1px solid var(--line);
   border-radius: var(--radius-sm);
-  background: transparent;
+  background: var(--surface-sunken);
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.15s ease;
 }
-.mtab:hover { background: var(--surface-sunken); }
-.mtab[aria-selected='true'] { background: var(--aura-soft); }
-.mtab__sym { font-weight: 600; }
-.mtab[aria-selected='true'] .mtab__sym { color: var(--aura-text); }
-.mtab__px { color: var(--ink-muted); font-size: 12px; line-height: 16px; }
-.mtab[aria-selected='true'] .mtab__px { color: var(--ink); }
+.mpick__face:hover { border-color: var(--line-strong); }
+.mpick__sym { font-size: 14px; line-height: 18px; font-weight: 600; }
+.mpick__px { grid-column: 1; color: var(--ink-muted); font-size: 13px; line-height: 16px; }
+.mpick__chev { grid-column: 2; grid-row: 1 / 3; color: var(--ink-muted); transition: transform 0.15s ease; }
+.mpick__face[aria-expanded='true'] .mpick__chev { transform: rotate(180deg); }
+.mpick__panel {
+  position: absolute;
+  top: calc(100% - 2px);
+  left: 6px;
+  z-index: 30;
+  width: 380px;
+  max-width: calc(100vw - 2 * var(--space-3));
+  padding: var(--space-1);
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  animation: rise 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mpick__head, .mpick__opt { display: grid; grid-template-columns: minmax(0, 1fr) 104px 92px; align-items: center; gap: var(--space-3); padding: 0 var(--space-3); }
+.mpick__head > :not(:first-child), .mpick__opt > :not(:first-child) { justify-self: end; text-align: right; }
+.mpick__head { height: 30px; color: var(--ink-muted); font-size: 12px; }
+.mpick__opt { width: 100%; height: 52px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--ink); text-align: left; cursor: pointer; }
+.mpick__opt:hover { background: var(--surface-sunken); }
+.mpick__opt[aria-selected='true'] { background: var(--surface-sunken); }
+.mpick__opt .delta { color: var(--ink); }
+.mpick__opt .num { font-size: 14px; }
+.mpick__name { display: grid; gap: 1px; min-width: 0; }
+.mpick__name b { font-size: 14px; line-height: 18px; font-weight: 600; }
+.mpick__name small { overflow: hidden; color: var(--ink-muted); font-size: 12px; line-height: 16px; text-overflow: ellipsis; white-space: nowrap; }
 
-.stats { display: flex; align-items: center; flex: 1; gap: var(--space-5); padding: 0 var(--space-4); }
+.stats { display: flex; align-items: center; flex: 1; min-width: 0; gap: var(--space-5); padding: 0 var(--space-4); overflow-x: auto; scrollbar-width: none; }
 .stat { display: grid; gap: 2px; }
-.stat dt { color: var(--ink-muted); font-size: 11.5px; line-height: 14px; white-space: nowrap; }
-.stat dd { display: flex; align-items: center; gap: 6px; min-height: 18px; white-space: nowrap; }
+.stat dt { color: var(--ink-muted); font-size: 12px; line-height: 16px; white-space: nowrap; }
+.stat dd { display: flex; align-items: center; gap: 6px; min-height: 20px; font-size: 14px; white-space: nowrap; }
 .stat--price dd { font-size: 20px; line-height: 24px; }
 .stat__note { color: var(--ink-muted); font-size: 12px; }
 .stat .is-live { color: var(--success); }
@@ -363,6 +421,46 @@ body {
 .cap--long .cap__bar i { background: var(--success); }
 .cap--long .cap__side { color: var(--success); }
 
+/* Reference order book: a column beside the chart on wide screens, a dock tab otherwise. */
+.bookcol { grid-area: book; min-height: 0; }
+.book { display: flex; flex-direction: column; flex: 1; min-height: 0; font-size: 13px; line-height: 21px; }
+.book__head, .book__side li { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); padding: 0 var(--space-3); text-align: right; white-space: nowrap; }
+.book__head > :first-child, .book__side li > :first-child { text-align: left; }
+.book__head { flex: none; height: 28px; align-items: center; color: var(--ink-muted); font-size: 11.5px; }
+/* Each side fills its half and clips the rows farthest from the middle, so the best prices always show. */
+.book__side { display: flex; flex-direction: column; flex: 1; min-height: 60px; margin: 0; padding: 0; overflow: hidden; list-style: none; }
+.book__side--ask { justify-content: flex-end; }
+.book__side li { flex: none; font-weight: 500; font-variant-numeric: tabular-nums; background: linear-gradient(to left, var(--bar) var(--w, 0%), transparent 0); }
+.book__side--ask li { --bar: color-mix(in srgb, var(--down) 14%, transparent); }
+.book__side--bid li { --bar: color-mix(in srgb, var(--up) 14%, transparent); }
+.book__side--ask li > :first-child { color: var(--down); }
+.book__side--bid li > :first-child { color: var(--up); }
+.book__side li.book__wait { display: block; padding: var(--space-2) var(--space-3); background: none; }
+.book__mid { display: flex; flex: none; align-items: baseline; justify-content: space-between; gap: var(--space-2); padding: 6px var(--space-3); border-block: 1px solid var(--line); }
+.book__mid .num { font-size: 15px; font-weight: 600; }
+.book__mid .muted { font-size: 11.5px; white-space: nowrap; }
+.book__note { flex: none; padding: var(--space-2) var(--space-3); border-top: 1px solid var(--line); color: var(--ink-muted); font-size: 11.5px; line-height: 16px; }
+.book__bid, .book__head--ask { display: none; }
+/* A wide, short dock: the oracle price on top, bids left and asks right, best prices first on both. */
+.dock { container: dock / inline-size; }
+@container dock (min-width: 560px) {
+  .dock .book {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    grid-template-areas: 'mid mid' 'hbid hask' 'bid ask' 'note note';
+  }
+  .dock .book__mid { grid-area: mid; border-top: 0; }
+  .dock .book__head { grid-area: hbid; }
+  .dock .book__head--ask { display: grid; grid-area: hask; border-left: 1px solid var(--line); }
+  .dock .book__any { display: none; }
+  .dock .book__bid { display: inline; }
+  .dock .book__side { min-height: 0; }
+  .dock .book__side--bid { grid-area: bid; }
+  .dock .book__side--ask { grid-area: ask; flex-direction: column-reverse; justify-content: flex-end; border-left: 1px solid var(--line); }
+  .dock .book__note { grid-area: note; }
+}
+
 .order { grid-area: order; display: flex; flex-direction: column; min-height: 0; background: var(--surface-raised); }
 .order__form { gap: 10px; padding: var(--space-3); }
 .field__top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); margin-bottom: 6px; }
@@ -384,7 +482,7 @@ body {
 .amount:hover { border-color: var(--ink-muted); }
 .amount:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; border-color: var(--aura); }
 .amount.is-invalid { border-color: var(--danger); }
-.amount input { flex: 1; min-width: 0; padding: 0; border: 0; outline: 0; background: transparent; font-family: var(--font-mono); font-size: 16px; font-variant-numeric: tabular-nums; }
+.amount input { flex: 1; min-width: 0; padding: 0; border: 0; outline: 0; background: transparent; font-size: 16px; font-weight: 500; font-variant-numeric: tabular-nums; }
 .amount input::placeholder { color: var(--ink-muted); }
 .amount__unit { color: var(--ink-muted); font-size: 12px; font-weight: 500; }
 
@@ -500,8 +598,10 @@ body {
 /* A mid-width dock keeps the table: tighter cells, and no collateral column (the leverage badge implies it). */
 @container (min-width: 601px) and (max-width: 860px) {
   .ptable th, .ptable td { padding: 0 var(--space-2); }
-  .ptable th:nth-child(3), .ptable td:nth-child(3) { display: none; }
+  .ptable:not(.ptable--history) th:nth-child(3), .ptable:not(.ptable--history) td:nth-child(3) { display: none; }
 }
+.ptable__market b { font-weight: 600; }
+.ptable--history .icon-btn { margin-right: calc(-1 * var(--space-2)); }
 @container (max-width: 600px) {
   .ptable thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   .ptable, .ptable tbody { display: block; }
@@ -535,8 +635,15 @@ body {
   .chart, .dock { min-height: 0; }
   .order { overflow-y: auto; }
 }
+/* Three columns: the order book sits between the chart and the order rail; the dock spans under both. */
+@media (min-width: 1280px) {
+  .terminal {
+    grid-template-columns: minmax(0, 1fr) 272px 320px;
+    grid-template-areas: 'mbar mbar mbar' 'chart book order' 'dock dock order';
+  }
+}
 @media (min-width: 1440px) {
-  .terminal { grid-template-columns: minmax(0, 1fr) 352px; }
+  .terminal { grid-template-columns: minmax(0, 1fr) 288px 352px; }
 }
 
 /* ---------- Dialog ---------- */
@@ -627,10 +734,10 @@ body {
   .tabbar a[aria-current='page'] { color: var(--aura-text); }
   .toasts { bottom: calc(56px + env(safe-area-inset-bottom) + var(--space-3)); }
   .mbar { flex-wrap: wrap; overflow: visible; }
-  .mtabs { width: 100%; border-right: 0; border-bottom: 1px solid var(--line); }
-  .mtab { flex: 1; min-width: 0; padding: 6px var(--space-2); }
+  .mpick { width: 100%; border-right: 0; border-bottom: 1px solid var(--line); }
+  .mpick__face { flex: 1; }
   .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3) var(--space-4); padding: var(--space-2); }
-  .stat--price { display: none; } /* the selected market tab already shows it */
+  .stat--price { display: none; } /* the market picker already shows it */
   .chart { min-height: 420px; }
   .order__cta { height: 48px; font-size: 17px; }
   .acct__actions .aura-btn { height: 40px; }
@@ -639,7 +746,8 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .skel, .toast, .dlg[open] { animation: none; }
-  .cap__bar i, .seg__item, .mtab, .chip, .icon-btn { transition: none; }
+  .cap__bar i, .seg__item, .chip, .icon-btn, .mpick__chev { transition: none; }
+  .mpick__panel { animation: none; }
 }
 
 .unit { margin-left: 4px; color: var(--ink-muted); font-family: var(--font-sans); font-size: 12px; letter-spacing: 0; }

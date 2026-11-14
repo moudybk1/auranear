@@ -30,19 +30,20 @@ Invarian `assert_solvent` (saldo pengguna + vault + insurance = token yang dipeg
 
 ## Lapis 2: gladi testnet
 
-- [ ] `cargo near build non-reproducible-wasm` berhasil; catat ukuran wasm
-- [ ] `scripts/01`–`04` berjalan dari nol (perbaiki flag CLI bila perlu, lalu commit)
+- [x] `cargo near build non-reproducible-wasm` berhasil; catat ukuran wasm (12 Nov, 281 KB)
+- [x] `scripts/01`–`04` berjalan dari nol (perbaiki flag CLI bila perlu, lalu commit) (12 Nov)
 - [ ] `get_config`, `get_markets` (3 market), `get_vault` benar
 - [ ] Deposit lewat `ft_transfer_call` menambah `free`; deposit di atas batas direfund
-- [ ] `withdraw` mengirim tUSD kembali; saldo konsisten
+- [x] `withdraw` mengirim tUSD kembali; saldo konsisten (14 Nov, akun `trader1`: tarik 99,959993, saldo wallet 999,959992)
 - [ ] Buka dan tutup posisi di tiap market; angka cocok dengan rumus
 - [x] Oracle menjaga 3 market segar 30 menit (13 Nov, dari laptop)
 - [x] Keeper melikuidasi posisi 10x setelah harga digeser (13 Nov, sekitar 20 detik)
-- [ ] Setor LP, tarik LP; harga share berubah sesuai PnL trader
-- [ ] `set_paused(true)`: buka ditolak, tutup dan tarik jalan
+- [x] Setor LP, tarik LP (14 Nov, lewat UI: setor 50, tarik semua, kembali 49,999999)
+- [ ] Harga share berubah sesuai PnL trader (baru teramati naik dari fee: 1,010066 ke 1,010138)
+- [ ] `set_paused(true)`: buka ditolak, tutup dan tarik jalan (14 Nov: banner tampil dan tombol buka terkunci di UI; tutup dan tarik saat pause belum dicoba)
 - [ ] Catat gas tiap method (target < 100 Tgas) dan pemakaian storage per akun (≤ 0,02 NEAR)
 - [ ] Web: seluruh daftar di `docs/FRONTEND_SPEC.md` §9
-- [ ] Rekonsiliasi: `ft_balance_of(perps)` = Σ `free + locked` semua akun uji + `assets` + `insurance`
+- [x] Rekonsiliasi: `ft_balance_of(perps)` = Σ `free + locked` semua akun uji + `assets` + `insurance` (14 Nov setelah siklus penuh: 509.460.056 di kedua sisi)
 
 ## Lapis 3: smoke test mainnet (nominal kecil, oleh pemilik)
 

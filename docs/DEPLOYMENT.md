@@ -68,9 +68,39 @@ Setelah ini kode tidak bisa diganti. Jangan lakukan sebelum yakin. Sintaks `dele
 
 | Bagian | Tempat | Catatan |
 |---|---|---|
-| Web | Vercel | Root `web/`; env `NEXT_PUBLIC_*`. Tidak ada impor ke luar `web/` (token ada di `web/styles/`), jadi root directory `web/` saja cukup |
-| Layanan | Railway / VPS kecil | Root `services/`; volume persisten untuk `DB_PATH`; restart otomatis; env rahasia |
-| Pemantauan | Cek `/health` tiap 5 menit (uptime monitor gratis) | Hidup minimal sampai 18 Nov, idealnya 25 Nov |
+| Web | Vercel | Root `web/` (tidak mengimpor apa pun dari luar folder itu; token ada di `web/styles/`); env Production: `NEXT_PUBLIC_NETWORK`, `NEXT_PUBLIC_CONTRACT_ID`, `NEXT_PUBLIC_USDC_ID`. Semua halaman statis. Hidup sejak 14 Nov di <https://aura-perps.vercel.app> (project `aura-perps`, testnet). Belum terhubung ke Git: deploy ulang dengan `vercel deploy --prod` dari `web/`. |
+| Layanan | VPS milik pemilik (Ubuntu 24.04) | Hidup sejak 14 Nov. Kode di `/opt/aura` (clone repo ini), dijalankan unit systemd `aura-services` dengan Node 22.23 di `/opt/node22`. Variabel dari `/opt/aura/services/.env` (izin 600, hanya root). Tanpa volume (belum ada SQLite). |
+| Pemantauan | Cek `/health` tiap 5 menit (uptime monitor gratis) | Hidup minimal sampai 18 Nov, idealnya 25 Nov. **Belum terpasang:** port 8787 tidak dibuka di firewall VPS, jadi `/health` baru bisa dicek dari dalam server. |
+
+Unit `/etc/systemd/system/aura-services.service` di VPS (tidak ada di repo). systemd membaca `.env` sebagai root; prosesnya sendiri berjalan sebagai pengguna sementara tanpa hak istimewa:
+
+```ini
+[Unit]
+Description=Aura oracle pusher and keeper (testnet)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+WorkingDirectory=/opt/aura/services
+EnvironmentFile=/opt/aura/services/.env
+ExecStart=/opt/node22/bin/node src/index.ts
+DynamicUser=yes
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Perintah harian di VPS:
+
+| Tujuan | Perintah |
+|---|---|
+| Status | `curl -s localhost:8787/health` |
+| Log | `journalctl -u aura-services -f` |
+| Deploy ulang | `cd /opt/aura && git pull && systemctl restart aura-services` (tambah `npm ci --omit=dev` di `services/` bila dependensi berubah) |
+
+Hanya satu proses boleh memakai kunci oracle pada satu waktu: jangan jalankan `npm start` di laptop selama layanan di VPS hidup. Akun oracle menghabiskan sekitar 0,27 NEAR per hari di testnet; isi ulang sebelum saldonya di bawah 0,2 NEAR (`/health` melaporkan `balance_near`).
 
 ## 7. Perkiraan biaya NEAR (diukur ulang di testnet)
 
