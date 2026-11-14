@@ -100,7 +100,7 @@ Perintah harian di VPS:
 | Log | `journalctl -u aura-services -f` |
 | Deploy ulang | `cd /opt/aura && git pull && systemctl restart aura-services` (tambah `npm ci --omit=dev` di `services/` bila dependensi berubah) |
 
-Hanya satu proses boleh memakai kunci oracle pada satu waktu: jangan jalankan `npm start` di laptop selama layanan di VPS hidup. Akun oracle menghabiskan sekitar 0,27 NEAR per hari di testnet; isi ulang sebelum saldonya di bawah 0,2 NEAR (`/health` melaporkan `balance_near`).
+Hanya satu proses boleh memakai kunci oracle pada satu waktu: jangan jalankan `npm start` di laptop selama layanan di VPS hidup. Akun oracle menghabiskan sekitar 0,27 NEAR per hari di testnet (diukur saat ambang 30 bps; saldo 12,01 NEAR pada 15 Nov); isi ulang sebelum saldonya di bawah 0,2 NEAR (`/health` melaporkan `balance_near`).
 
 ## 7. Perkiraan biaya NEAR (diukur ulang di testnet)
 

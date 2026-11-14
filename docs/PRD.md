@@ -52,7 +52,7 @@ Kolom "Kontrak" menunjukkan status di kontrak. Web dan layanan belum dibangun.
 | F12 | Web: Trade | Pilih market, arah, collateral, leverage; ringkasan (notional, fee, harga likuidasi) sebelum konfirmasi; daftar posisi + PnL | P0 | - |
 | F13 | Web: Vault | Setor/tarik LP; NAV, harga share, utilisasi OI per market | P0 | - |
 | F14 | Web: akun | Connect wallet, aktivasi akun, deposit, tarik, saldo bebas/terkunci | P0 | - |
-| F15 | Oracle pusher | Median ≥3 sumber; dorong saat bergerak ≥30 bps atau tiap 300 detik | P0 | - |
+| F15 | Oracle pusher | Median ≥3 sumber; dorong saat bergerak ≥10 bps atau tiap 300 detik | P0 | - |
 | F16 | Keeper | Pindai tiap 15 detik dan melikuidasi | P0 | - |
 | F17 | HTTP API | `/health`, riwayat harga, log keeper | P1 | - |
 | F18 | Tema terang/gelap dan dua bahasa | Sesuai design system | P1 | - |

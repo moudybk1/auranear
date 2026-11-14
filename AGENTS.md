@@ -10,7 +10,7 @@ Aura adalah perps exchange model pool di NEAR. Trader menyetor USDC, membuka lon
 - Fase berikutnya: `GPU-H100` (indeks harga sewa GPU, eksekusi dua langkah) dan agent hedging biaya compute. Dukungannya di kontrak sudah ada.
 - Konteks: dibangun untuk NEAR Hackathon. Batas submit **Minggu 15 Nov 2026, 06:59 WIB** (14 Nov 23:59 UTC).
 
-## 2. Status (12 Nov 2026, setelah gladi testnet)
+## 2. Status (15 Nov 2026)
 
 | Bagian | Lokasi | Status |
 |---|---|---|
@@ -36,7 +36,7 @@ Kunci semua akun ada di `~/.near-credentials/testnet/` pada laptop pemilik, tida
 
 Temuan gladi yang masih terbuka:
 
-- **Harga basi bila layanan mati.** Oracle berjalan di VPS pemilik sejak 14 Nov (systemd, hidup lagi otomatis setelah crash atau reboot); jangan jalankan `npm start` di laptop bersamaan, karena kunci oracle hanya boleh dipakai satu proses. Harga basi 10 menit setelah proses itu berhenti dan belum ada pemantau luar yang memberi tahu; `./scripts/06-push-prices.sh` tetap bisa dipakai sebagai cadangan manual. Satu `set_price` menghabiskan sekitar 0,00026 NEAR: terukur ≈ 0,27 NEAR/hari untuk 3 market, sedangkan saldo akun oracle 2,23 NEAR per 14 Nov (cukup sekitar 8 hari).
+- **Harga basi bila layanan mati.** Oracle berjalan di VPS pemilik sejak 14 Nov (systemd, hidup lagi otomatis setelah crash atau reboot); jangan jalankan `npm start` di laptop bersamaan, karena kunci oracle hanya boleh dipakai satu proses. Harga basi 10 menit setelah proses itu berhenti dan belum ada pemantau luar yang memberi tahu; `./scripts/06-push-prices.sh` tetap bisa dipakai sebagai cadangan manual. Satu `set_price` menghabiskan sekitar 0,00026 NEAR: terukur ≈ 0,27 NEAR/hari untuk 3 market, sedangkan per 15 Nov saldo akun oracle 12,01 NEAR dan keeper 10,29 NEAR (cukup lebih dari sebulan pada laju itu; laju diukur saat ambang 30 bps dan belum diukur ulang pada 10 bps).
 - **Sumber harga oracle.** Dari jaringan laptop pemilik hanya Binance (mirror data publik), Gate, dan HTX yang terjangkau; Coinbase, Kraken, dan OKX diblokir ISP sehingga respons mereka belum bisa diverifikasi dan tidak dipakai. Ketiga sumber memakai pasangan USDT. Tambahkan venue USD di `services/src/oracle.ts` setelah dicek dari host.
 - **Debu pembulatan funding.** Setelah semua posisi ditutup `get_vault.pending_funding` tersisa −1 sampai −2 micro-USD per posisi yang pernah ditutup atau dilikuidasi (−5 setelah empat posisi), sehingga NAV berada sejumlah itu di bawah aset. Invarian token tetap cocok. Logika akuntansi tidak diubah; putuskan apakah ini diterima.
 

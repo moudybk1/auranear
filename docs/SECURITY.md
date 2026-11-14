@@ -97,7 +97,7 @@ Aturan: tidak ada kunci atau seed phrase di repo, chat, log, atau screenshot. `.
 
 | Keterbatasan | Dampak | Rencana |
 |---|---|---|
-| Belum diaudit; wasm belum pernah di-build; script deploy belum pernah dijalankan | Bisa ada bug yang tidak tertangkap unit test | Gladi testnet; batas dana kecil |
+| Belum diaudit; hanya diuji di testnet (wasm sudah di-build dan di-deploy di sana, script 01–04 sudah dijalankan; mainnet belum) | Bisa ada bug yang tidak tertangkap unit test | Gladi testnet; batas dana kecil |
 | Owner bisa memaksa harga dan mengganti oracle | Owner jahat/diretas bisa merugikan vault lewat harga palsu | Batas kecil; multisig + timelock nanti |
 | Oracle satu akun | Satu titik gagal untuk harga | TEE atau banyak pelapor |
 | **Latensi harga di market langsung** | Trader yang melihat harga bursa bergerak sebelum oracle mendorong bisa mengambil untung dari vault; fee 0,1% per sisi hanya menutup sebagian | Ambang dorong lebih kecil; atau dua langkah untuk semua market; atau spread dinamis |

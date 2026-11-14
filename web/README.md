@@ -5,7 +5,7 @@ Landing page, Trade and Vault for the Aura perps contract. Next.js (App Router) 
 ```bash
 npm install
 npm run dev        # http://localhost:3000
-npm test           # math + simulator self-check (4 tests)
+npm test           # math, simulator, prices and history self-checks (6 tests)
 npm run typecheck
 npm run build
 ```

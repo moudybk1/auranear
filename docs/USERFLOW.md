@@ -60,7 +60,7 @@ Setiap langkah menyebut method kontrak yang dipanggil, sehingga dokumen ini juga
 ## 4. Oracle (layanan)
 
 1. Tiap 5 detik ambil harga dari ≥3 sumber per market, hitung median.
-2. Dorong `set_price(market_id, price, ts_sec)` bila bergerak ≥ 30 bps dari harga on-chain, atau sudah 300 detik sejak dorong terakhir.
+2. Dorong `set_price(market_id, price, ts_sec)` bila bergerak ≥ 10 bps dari harga on-chain, atau sudah 300 detik sejak dorong terakhir.
 3. Bila sumber sehat < 2: tidak mendorong. Harga menjadi basi dan kontrak memblokir trading.
 
 ## 5. Owner
