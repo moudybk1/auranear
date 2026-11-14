@@ -31,6 +31,12 @@ pub const STORAGE_DEPOSIT: NearToken = NearToken::from_millinear(20); // 0.02 NE
 const GAS_FT_TRANSFER: Gas = Gas::from_tgas(15);
 const GAS_WITHDRAW_CALLBACK: Gas = Gas::from_tgas(10);
 
+/// Withdrawals whose token transfer has not resolved yet, per account. Kept outside the
+/// `Contract` struct so the state already deployed on testnet still deserializes.
+fn pending_withdrawals() -> LookupMap<AccountId, u32> {
+    LookupMap::new(StorageKey::PendingWithdrawals)
+}
+
 #[ext_contract(ext_ft)]
 #[allow(dead_code)]
 trait FungibleToken {
@@ -127,6 +133,9 @@ impl Contract {
         let Some(acc) = self.accounts.get(&account_id) else {
             return false;
         };
+        // A failed transfer refunds into the account; it must still exist then, or the refund
+        // would re-create it without a storage deposit.
+        require!(pending_withdrawals().get(&account_id).is_none(), "A withdrawal is still in flight");
         require!(
             acc.free == 0 && acc.locked == 0 && acc.lp_shares == 0 && acc.positions.is_empty() && acc.orders.is_empty(),
             "Account is not empty"
@@ -201,6 +210,15 @@ impl Contract {
         // Only an explicit failure restores balances; any returned data counts as success,
         // so a successful transfer can never be credited twice.
         let ok = !matches!(env::promise_result_checked(0, 1024), Err(PromiseError::Failed));
+        let mut pending = pending_withdrawals();
+        match pending.get(&account_id).copied().unwrap_or(0) {
+            0 | 1 => {
+                pending.remove(&account_id);
+            }
+            n => {
+                pending.insert(account_id.clone(), n - 1);
+            }
+        }
         if !ok {
             let mut acc = self.accounts.get(&account_id).cloned().unwrap_or_default();
             if lp_shares.0 > 0 {
@@ -644,7 +662,11 @@ impl FungibleTokenReceiver for Contract {
                 if nav + amount_v > self.limits.vault_cap.0 {
                     return refund("over vault cap");
                 }
-                let shares = if self.vault.total_shares == 0 || nav == 0 {
+                // Shares with no value behind them would dilute this deposit, so refuse it.
+                if self.vault.total_shares > 0 && nav == 0 {
+                    return refund("vault has shares but no value");
+                }
+                let shares = if self.vault.total_shares == 0 {
                     amount_v
                 } else {
                     amount_v * self.vault.total_shares / nav
@@ -948,6 +970,9 @@ impl Contract {
     }
 
     fn send_collateral(&self, to: AccountId, amount: u128, lp_shares: u128) -> Promise {
+        let mut pending = pending_withdrawals();
+        let n = pending.get(&to).copied().unwrap_or(0);
+        pending.insert(to.clone(), n + 1);
         ext_ft::ext(self.collateral_token.clone())
             .with_attached_deposit(NearToken::from_yoctonear(1))
             .with_static_gas(GAS_FT_TRANSFER)

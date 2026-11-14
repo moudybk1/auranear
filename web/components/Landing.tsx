@@ -5,7 +5,7 @@
 // The ticket is a real fragment of the app (same classes, same strings, same math) fed by the same store
 // as the terminal. Copy lives in lib/landing-copy.ts, styles and motion in styles/landing.css.
 
-import { ArrowRight, ArrowUpRight, ChevronDown, TrendingDown, TrendingUp } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, TrendingDown, TrendingUp } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Fragment, useEffect, useId, useRef, useState } from 'react';
@@ -16,7 +16,7 @@ import { LANDING, fill } from '../lib/landing-copy';
 import { quoteOpen, toBase } from '../lib/math';
 import { useAura } from '../lib/store';
 import { Logo } from './Logo';
-import { MARKET_IDS, NAMES } from './trade/MarketBar';
+import { MARKET_IDS, MarketPicker, NAMES } from './trade/MarketBar';
 import { Delta, Row, Segmented, Skeleton, Unit, cx, useNow } from './ui';
 
 const icon = { size: 18, strokeWidth: 1.75, 'aria-hidden': true } as const;
@@ -385,15 +385,10 @@ function Cta({ marketId, onMarket }: MarketProps) {
   const ids = useMarketIds();
   return (
     <section className="lp-sec lp-wrap lp-cta" data-rv>
-      <h2 className="rv">
-        {c.lead}{' '}
-        <span className="lp-cta__pick">
-          <select aria-label={c.market} value={marketId} onChange={(e) => onMarket(e.target.value)}>
-            {ids.map((id) => <option key={id}>{id}</option>)}
-          </select>
-          <ChevronDown aria-hidden />
-        </span>
-      </h2>
+      <div className="lp-cta__head rv">
+        <h2>{c.lead}</h2>
+        <MarketPicker ids={ids} marketId={marketId} onSelect={onMarket} />
+      </div>
       <Link href={`/trade?market=${marketId}`} className="lp-cta__go rv" style={rv(2)}>
         {c.go}
         <ArrowRight aria-hidden />

@@ -173,11 +173,16 @@ a.lp-row:hover .lp-row__go { color: var(--ink); transform: translateX(4px); }
 
 /* ---------- Closing: a sentence with a gap, and the gap is the market ---------- */
 .lp-cta { --t-hero: clamp(2.75rem, 8vw, 7.5rem); }
-.lp-cta h2 { font-size: var(--t-hero); line-height: 1.12; }
-.lp-cta__pick { position: relative; display: inline-flex; align-items: center; vertical-align: baseline; }
-.lp-cta__pick select { height: 1.08em; padding: 0 1.05em 0 0.2em; border: 0; border-radius: var(--r); background: var(--tone-2); color: var(--ink); font: inherit; letter-spacing: inherit; line-height: 1; cursor: pointer; -webkit-appearance: none; appearance: none; transition: background-color 0.15s ease; }
-.lp-cta__pick select:hover { background: color-mix(in srgb, var(--ink) 18%, var(--surface)); }
-.lp-cta__pick svg { position: absolute; right: 0.22em; width: 0.5em; height: 0.5em; pointer-events: none; }
+.lp-cta__head { display: flex; flex-wrap: wrap; align-items: center; gap: 0 0.25em; font-size: var(--t-hero); }
+.lp-cta h2 { font-size: inherit; line-height: 1.12; }
+/* The terminal's market picker (components/trade/MarketBar.tsx) with a headline-sized face; its list keeps the app's size. */
+.lp-cta .mpick { width: auto; padding: 0; border: 0; }
+.lp-cta .mpick__face { display: inline-flex; flex: none; align-items: center; gap: 0.25em; min-width: 0; height: 1.08em; padding: 0 0.22em 0 0.2em; border: 0; border-radius: var(--r); background: var(--tone-2); color: var(--ink); font: 600 1em/1 var(--font-display); letter-spacing: -0.035em; transition: background-color 0.15s ease; }
+.lp-cta .mpick__face:hover { background: color-mix(in srgb, var(--ink) 18%, var(--surface)); }
+.lp-cta .mpick__sym { font: inherit; }
+.lp-cta .mpick__px { display: none; }
+.lp-cta .mpick__chev { width: 0.5em; height: 0.5em; color: var(--ink); }
+.lp-cta .mpick__panel { top: calc(100% + var(--space-2)); left: 0; }
 .lp-cta__go {
   display: inline-flex;
   align-items: center;

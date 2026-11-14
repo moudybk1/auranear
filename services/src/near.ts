@@ -12,7 +12,7 @@ export const cfg = {
   network: env('NETWORK'),
   contract: env('CONTRACT_ID'),
   markets: env('MARKETS').split(',').map((s) => s.trim()).filter(Boolean),
-  pushBps: BigInt(env('PRICE_PUSH_BPS', '30')),
+  pushBps: BigInt(env('PRICE_PUSH_BPS', '10')),
   pushMaxSec: Number(env('PRICE_PUSH_MAX_SEC', '300')),
   oraclePollSec: Number(env('ORACLE_POLL_SEC', '5')),
   keeperIntervalSec: Number(env('KEEPER_INTERVAL_SEC', '15')),

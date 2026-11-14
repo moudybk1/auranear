@@ -638,6 +638,70 @@ fn storage_unregister_only_when_empty() {
     assert!(h.c.get_account(alice()).is_none());
 }
 
+/// Run the `on_withdraw` callback as if the token transfer had `result`.
+fn resolve_withdraw(h: &mut H, who: &AccountId, amount: u128, result: PromiseResult) -> bool {
+    let mut b = VMContextBuilder::new();
+    b.current_account_id(acc("perps.near")).predecessor_account_id(acc("perps.near"));
+    testing_env!(b.build(), near_sdk::test_vm_config(), RuntimeFeesConfig::test(), Default::default(), vec![result]);
+    h.c.on_withdraw(who.clone(), U128(amount), U128(0))
+}
+
+#[test]
+#[should_panic(expected = "A withdrawal is still in flight")]
+fn cannot_unregister_while_a_withdrawal_is_in_flight() {
+    let mut h = funded();
+    h.withdraw(&alice(), 100 * USD);
+    ctx(&alice(), 1, h.t);
+    h.c.storage_unregister(None);
+}
+
+#[test]
+fn failed_withdrawal_refunds_a_still_registered_account_then_unregister_works() {
+    let mut h = funded();
+    h.withdraw(&alice(), 100 * USD);
+    assert!(!resolve_withdraw(&mut h, &alice(), 100 * USD, PromiseResult::Failed));
+    h.token_balance += 100 * USD;
+    assert_eq!(h.free(&alice()), 100 * USD);
+    h.assert_solvent(&all());
+    // The refund cleared the in-flight marker; after a real withdrawal that succeeds, unregister is allowed.
+    h.withdraw(&alice(), 100 * USD);
+    assert!(resolve_withdraw(&mut h, &alice(), 100 * USD, PromiseResult::Successful(vec![])));
+    ctx(&alice(), 1, h.t);
+    assert!(h.c.storage_unregister(None));
+    assert!(h.c.get_account(alice()).is_none());
+}
+
+#[test]
+fn two_withdrawals_in_flight_block_unregister_until_both_resolve() {
+    let mut h = funded();
+    h.withdraw(&alice(), 40 * USD);
+    h.withdraw(&alice(), 60 * USD);
+    assert!(resolve_withdraw(&mut h, &alice(), 40 * USD, PromiseResult::Successful(vec![])));
+    ctx(&alice(), 1, h.t);
+    assert!(std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| h.c.storage_unregister(None))).is_err());
+    assert!(resolve_withdraw(&mut h, &alice(), 60 * USD, PromiseResult::Successful(vec![])));
+    ctx(&alice(), 1, h.t);
+    assert!(h.c.storage_unregister(None));
+}
+
+#[test]
+fn lp_deposit_is_refunded_when_shares_exist_but_nav_is_zero() {
+    let mut h = funded();
+    // alice goes long the max allowed and the price runs far enough to wipe out the vault's NAV.
+    h.open(&alice(), NEAR_USD, true, 40 * USD, 10);
+    h.walk_price(NEAR_USD, 12 * USD);
+    assert_eq!(h.c.get_vault().nav.0, 0);
+    assert!(h.c.get_vault().total_shares.0 > 0);
+    h.register(&bob());
+    let before = h.c.get_vault();
+    assert_eq!(h.deposit(&bob(), 100 * USD, "lp"), 100 * USD, "refunded, not diluted");
+    let after = h.c.get_vault();
+    assert_eq!(before.total_shares.0, after.total_shares.0);
+    assert_eq!(before.assets.0, after.assets.0);
+    assert_eq!(h.account(&bob()).lp_shares.0, 0);
+    h.assert_solvent(&all());
+}
+
 // ---------------- launch markets: BTC, ETH, NEAR ----------------
 
 #[test]

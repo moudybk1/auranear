@@ -12,6 +12,8 @@ import { nearAmount } from './trade/OrderForm';
 
 export type FundsKind = 'deposit' | 'withdraw' | 'lpDeposit' | 'lpWithdraw';
 
+const NEAR_FAUCET_URL = 'https://docs.near.org/getting-started/faucet';
+
 const min = (a: bigint, b: bigint) => (a < b ? a : b);
 const floor0 = (v: bigint) => (v > 0n ? v : 0n);
 
@@ -71,6 +73,7 @@ export function FundsDialog({ kind, onClose }: { kind: FundsKind | null; onClose
     <Dialog open onClose={onClose} title={view.title} closeLabel={t('dialog.close')}>
       <AmountForm
         {...view} allowEmpty={kind === 'deposit' && newAccount} onClose={onClose}
+        help={FAUCET && newAccount && kind === 'deposit'}
         // The dialog stays open: it steps aside for the wallet and comes back with the new wallet balance.
         onFaucet={FAUCET && accountId && kind !== 'withdraw' && kind !== 'lpWithdraw' ? () => void send([faucet(accountId)], t('tx.ok.faucet')) : undefined}
       />
@@ -79,10 +82,11 @@ export function FundsDialog({ kind, onClose }: { kind: FundsKind | null; onClose
 }
 
 function AmountForm({
-  body, maxLabel, max, cta, run, allowEmpty, onClose, onFaucet,
+  body, maxLabel, max, cta, run, allowEmpty, onClose, onFaucet, help,
 }: {
   body: string; maxLabel: string; max: bigint; cta: (amount: bigint) => string;
   run: (amount: bigint) => Promise<boolean>; allowEmpty: boolean; onClose: () => void; onFaucet?: () => void;
+  help?: boolean;
 }) {
   const { t, locale } = useI18n();
   const { pending } = useAura();
@@ -99,6 +103,12 @@ function AmountForm({
       }}
     >
       <p className="dlg__text">{body}</p>
+      {help && (
+        <p className="dlg__hint">
+          {t('faucet.help')}{' '}
+          <a href={NEAR_FAUCET_URL} target="_blank" rel="noreferrer">{t('faucet.help.link')}</a>
+        </p>
+      )}
       <div style={{ marginTop: 'var(--space-4)' }}>
         <div className="field__top">
           <label className="field__label" htmlFor={id}>{t('dialog.amount')}</label>

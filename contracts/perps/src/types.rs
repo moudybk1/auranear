@@ -21,6 +21,8 @@ pub enum StorageKey {
     Positions,
     Markets,
     Orders,
+    /// Appended last so existing storage prefixes keep their meaning.
+    PendingWithdrawals,
 }
 
 /// Global guarded-launch limits (all amounts in collateral base units, USDC = 6 decimals).

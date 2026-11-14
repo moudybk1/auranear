@@ -29,7 +29,7 @@ Impor akun utama ke keychain: `near account import-account` (pilih jaringan, sim
 
 ```bash
 export NETWORK=testnet OWNER=<akun>.testnet
-cd contracts/perps && cargo test                 # 40 passed
+cd contracts/perps && cargo test                 # 44 passed
 cd ../.. 
 ./scripts/01-create-accounts.sh                  # sub-account + tusd
 ./scripts/02-deploy.sh                           # build wasm, deploy tUSD + perps, init, storage, faucet 1000 tUSD ke owner

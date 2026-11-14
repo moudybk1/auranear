@@ -125,6 +125,8 @@ const en = {
   'account.activate.and': 'Activate and deposit',
   'account.activate.optional': 'Optional. Leave empty to activate only.',
   'faucet.cta': 'Get 1,000 test USDC',
+  'faucet.help': 'New on testnet? 1) Get a little test NEAR for your account from the NEAR faucet (about 0.1 is enough). 2) Tap the test USDC button below. 3) Activate.',
+  'faucet.help.link': 'Open the NEAR faucet',
 
   'dialog.amount': 'Amount',
   'dialog.cancel': 'Cancel',
@@ -369,6 +371,8 @@ const id: Record<Key, string> = {
   'account.activate.and': 'Aktifkan dan deposit',
   'account.activate.optional': 'Opsional. Kosongkan untuk aktivasi saja.',
   'faucet.cta': 'Ambil 1.000 USDC tes',
+  'faucet.help': 'Baru di testnet? 1) Ambil sedikit NEAR tes untuk akunmu dari faucet NEAR (sekitar 0,1 sudah cukup). 2) Tekan tombol USDC tes di bawah. 3) Aktifkan akun.',
+  'faucet.help.link': 'Buka faucet NEAR',
 
   'dialog.amount': 'Jumlah',
   'dialog.cancel': 'Batal',

@@ -20,7 +20,7 @@ export function usePriceDir() {
 }
 
 /** Market dropdown: a listbox with the oracle price and 24h change per market. Arrows move, Enter picks, Esc closes. */
-function MarketPicker({ ids, marketId, onSelect }: { ids: string[]; marketId: string; onSelect: (id: string) => void }) {
+export function MarketPicker({ ids, marketId, onSelect }: { ids: string[]; marketId: string; onSelect: (id: string) => void }) {
   const { t, locale } = useI18n();
   const { markets, tickers } = useAura();
   const [open, setOpen] = useState(false);

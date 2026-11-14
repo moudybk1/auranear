@@ -129,7 +129,7 @@ aura/
 | `ORACLE_ACCOUNT_ID`, `ORACLE_PRIVATE_KEY` | Akun dan kunci oracle | Ya |
 | `KEEPER_ACCOUNT_ID`, `KEEPER_PRIVATE_KEY` | Akun dan kunci keeper | Ya |
 | `MARKETS` | `BTC-USD,ETH-USD,NEAR-USD` | Tidak |
-| `PRICE_PUSH_BPS` | 30 | Tidak |
+| `PRICE_PUSH_BPS` | 10 | Tidak |
 | `PRICE_PUSH_MAX_SEC` | 300 | Tidak |
 | `KEEPER_INTERVAL_SEC` | 15 | Tidak |
 | `PORT`, `CORS_ORIGIN`, `DB_PATH` | HTTP API | Tidak |

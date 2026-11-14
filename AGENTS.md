@@ -14,7 +14,7 @@ Aura adalah perps exchange model pool di NEAR. Trader menyetor USDC, membuka lon
 
 | Bagian | Lokasi | Status |
 |---|---|---|
-| Kontrak perps | `contracts/perps` | `cargo test` = 40 lulus. Wasm ter-build tanpa perubahan kode (281 KB) dan **ter-deploy di testnet** (`perps.aura-perps.testnet`): 3 market, vault berisi setoran LP. Satu siklus deposit, buka, tutup, tarik, tarik LP sudah berjalan di sana dan invarian cocok. Belum di mainnet. |
+| Kontrak perps | `contracts/perps` | `cargo test` = 44 lulus (dua perbaikan bug 15 Nov sudah di-deploy ulang ke testnet tanpa mengubah state). Wasm ter-build tanpa perubahan kode (281 KB) dan **ter-deploy di testnet** (`perps.aura-perps.testnet`): 3 market, vault berisi setoran LP. Satu siklus deposit, buka, tutup, tarik, tarik LP sudah berjalan di sana dan invarian cocok. Belum di mainnet. |
 | Token tes tUSD | `contracts/mock-ft` | Ter-deploy di testnet (`tusd.aura-perps.testnet`). Hanya untuk testnet. |
 | Script deploy | `scripts/01..06` | `01`–`04` sudah dijalankan di testnet (near-cli-rs 0.30.1, cargo-near 0.23.0, bash 3.2 macOS). `05` **belum pernah dijalankan**. `06-push-prices.sh` mendorong satu harga manual per market (testnet saja); cadangan saat layanan oracle tidak berjalan. `07-force-price.sh` (14 Nov, testnet saja) menurunkan harga satu market sebagai owner untuk adegan likuidasi di demo; lihat runbook di `docs/ROADMAP.md` §4. |
 | Design system | `web/styles/`, `web/app/fonts/` | Folder kit `design-system/` **tidak ikut di repo ini**. Yang ada: token di `web/styles/aura-tokens.css`, gaya komponen di `web/styles/aura-components.css`, font self-hosted di `web/app/fonts/`, logo di `web/components/Logo.tsx`, port komponen di `web/components/ui.tsx`. |
@@ -60,7 +60,7 @@ Temuan gladi yang masih terbuka:
 
 ## 4. Urutan kerja
 
-1. **Build kontrak ke wasm.** (Selesai 12 Nov.) `cd contracts/perps && cargo near build non-reproducible-wasm`. Perbaiki error build bila ada tanpa mengubah perilaku; `cargo test` harus tetap 40 lulus.
+1. **Build kontrak ke wasm.** (Selesai 12 Nov.) `cd contracts/perps && cargo near build non-reproducible-wasm`. Perbaiki error build bila ada tanpa mengubah perilaku; `cargo test` harus tetap 44 lulus.
 2. **Gladi testnet.** (Selesai 12 Nov, lihat §2.) Jalankan `scripts/01..04` dengan `NETWORK=testnet`. Perbaiki script bila ada flag yang salah. Selesai jika `get_markets` menampilkan 3 market dan `get_vault` menampilkan setoran LP.
 3. **Layanan: oracle pusher.** (Selesai 13 Nov: dipantau 30 menit dari laptop, 60 sampel, tidak ada harga basi, umur harga tertua 303 detik, tanpa error di log layanan.) Sesuai `docs/SERVICES_SPEC.md`. Selesai jika ketiga market `is_fresh: true` terus-menerus selama 30 menit di testnet.
 4. **Layanan: keeper.** (Selesai 13 Nov, lihat §2.) Selesai jika posisi leverage tinggi yang sengaja dibuat dilikuidasi otomatis setelah harga digeser.
@@ -86,13 +86,13 @@ Temuan gladi yang masih terbuka:
 | Bahasa UI: design system memakai Bahasa Indonesia ("kamu"), sedangkan juri hackathon internasional | Dua bahasa (`en` default, `id` lewat tombol), dengan aturan suara design system di keduanya |
 | Nama akun mainnet (`perps.<akun>.near`) | Menunggu pemilik |
 | Sumber indeks harga GPU | Ditunda ke fase berikutnya |
-| Ambang dorong harga oracle (kelemahan latensi, lihat `docs/SECURITY.md`) | Dorong saat bergerak ≥ 30 bps, atau tiap 300 detik; perkecil ambang setelah biaya gas diukur |
+| Ambang dorong harga oracle (kelemahan latensi, lihat `docs/SECURITY.md`) | Dorong saat bergerak ≥ 10 bps, atau tiap 300 detik (diturunkan dari 30 pada 15 Nov setelah selisih ke bursa terukur 30–47 bps, lebih besar dari fee 10 bps) |
 
 ## 7. Perintah cepat
 
 ```bash
 # Kontrak
-cd contracts/perps && cargo test                      # harus: 40 passed
+cd contracts/perps && cargo test                      # harus: 44 passed
 cargo near build non-reproducible-wasm                # butuh cargo-near + target wasm32-unknown-unknown
 
 # Deploy testnet
